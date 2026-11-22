@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { computeCycles, cycleDay, cycleLabel } from './cycles'
+import { computeCycles, cycleDay, cycleLabel, predictNext } from './cycles'
 import { addDays } from './dates'
 import { emptyDay, type DayEntry } from './model'
 
@@ -61,5 +61,17 @@ describe('computeCycles', () => {
     expect(computeCycles(days, S)[0].length).toBe(28)
     const ny = [...period('2025-12-20', [2]), ...period('2026-01-17', [2])]
     expect(computeCycles(ny, S)[0].length).toBe(28)
+  })
+})
+
+describe('predictNext', () => {
+  const mk = (start: string, length: number | null, bleedDays = 5) => ({ start, end: null, length, bleedDays, periodEnd: start })
+  it('mittelt abgeschlossene Zyklen', () => {
+    const p = predictNext([mk('2026-01-01', 28, 4), mk('2026-01-29', 30, 6), mk('2026-02-28', null)], '2026-03-05')
+    expect(p).toEqual({ start: '2026-03-29', days: 5, length: 29 })
+  })
+  it('keine Prognose ohne abgeschlossenen Zyklus oder bei Überfälligkeit', () => {
+    expect(predictNext([mk('2026-01-01', null)], '2026-01-05')).toBeNull()
+    expect(predictNext([mk('2026-01-01', 28), mk('2026-01-29', null)], '2026-02-27')).toBeNull()
   })
 })

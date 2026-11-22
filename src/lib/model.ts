@@ -65,8 +65,13 @@ export interface MedFavorite {
   doses: number[]
 }
 
+export type ThemeMode = 'system' | 'dunkel' | 'hell'
+export type ThemePalette = 'rose' | 'beere' | 'lavendel' | 'salbei' | 'ozean' | 'sand'
+
 export interface Settings {
   id: 'app'
+  /** Erscheinungsbild: Hell/Dunkel und Akzentfarbe */
+  appearance: { mode: ThemeMode; palette: ThemePalette }
   modules: {
     contraception: boolean
     /** Schmerz & Medikamente */
@@ -103,11 +108,12 @@ export const SYMPTOM_CATALOG: { group: string; items: string[] }[] = [
   },
   { group: 'Verdauung', items: ['Durchfall', 'Verstopfung', 'Übelkeit', 'Blähungen'] },
   { group: 'Allgemein', items: ['Kopfschmerzen', 'Migräne', 'Brustspannen', 'Unreine Haut', 'Schlafprobleme', 'Wassereinlagerungen'] },
-  { group: 'Stimmung', items: ['Stimmungsschwankungen', 'Gereizt', 'Traurig', 'Ängstlich', 'Energiegeladen'] },
+  { group: 'Stimmung', items: ['Ausgeglichen', 'Energiegeladen', 'Stimmungsschwankungen', 'Gereizt', 'Traurig', 'Ängstlich'] },
 ]
 
 export const DEFAULT_SETTINGS: Settings = {
   id: 'app',
+  appearance: { mode: 'dunkel', palette: 'rose' },
   modules: { contraception: false, pain: true, endo: false, symptoms: true, nfp: false, nfpMucus: true, nfpCervix: false, lh: false },
   birthYear: null,
   menarcheAge: null,

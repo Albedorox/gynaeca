@@ -3,8 +3,12 @@ import { createRoot } from 'react-dom/client'
 import { registerSW } from 'virtual:pwa-register'
 import App from './App'
 import './styles.css'
+import { restoreAppearance } from './lib/theme'
 
-registerSW({ immediate: true })
+restoreAppearance()
+
+// Offline-Cache nur in der eigentlichen App, nicht in eingebetteten Vorschauen
+if (window.self === window.top) registerSW({ immediate: true })
 
 // Bittet den Browser, die lokalen Daten nicht automatisch zu löschen.
 if (navigator.storage?.persist) {

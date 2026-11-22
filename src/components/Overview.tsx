@@ -1,3 +1,4 @@
+import { Icon } from './Icons'
 import { useEffect, useRef, useState } from 'react'
 import type { AppData } from '../lib/useData'
 import { courseOn } from '../lib/useData'
@@ -15,7 +16,7 @@ export default function Overview({ data, onBack, onPickMonth }: { data: AppData;
   return (
     <div className="page overview">
       <header className="page-head">
-        <button className="icon-btn" onClick={onBack} aria-label="Zurück">‹</button>
+        <button className="icon-btn" onClick={onBack} aria-label="Zurück"><Icon name="back" /></button>
         <h1>Übersicht</h1>
         <span className="spacer" />
         <div className="seg">
@@ -28,7 +29,7 @@ export default function Overview({ data, onBack, onPickMonth }: { data: AppData;
   )
 }
 
-function MonthsZoom({ data, onPickMonth }: { data: AppData; onPickMonth: (y: number, m0: number) => void }) {
+export function MonthsZoom({ data, onPickMonth }: { data: AppData; onPickMonth: (y: number, m0: number) => void }) {
   const t = parseISO(todayISO())
   const firstData = data.dayList[0]?.date
   let start = shiftMonth(t.y, t.m0, -11)

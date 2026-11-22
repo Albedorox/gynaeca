@@ -34,7 +34,7 @@ export async function exportJSON(): Promise<void> {
     days: await db.days.orderBy('date').toArray(),
     courses: await db.courses.toArray(),
   }
-  download(`zyklusblatt-backup-${todayISO()}.json`, JSON.stringify(data, null, 2), 'application/json')
+  download(`gynaeca-backup-${todayISO()}.json`, JSON.stringify(data, null, 2), 'application/json')
 }
 
 function csvCell(v: unknown): string {
@@ -84,13 +84,13 @@ export async function exportCSV(): Promise<void> {
       d.mucusSource === 'muttermund' ? 'am Muttermund' : d.mucusSource === 'aussen' ? 'am Scheideneingang' : '',
     ].map(csvCell).join(';')
   })
-  download(`zyklusblatt-${todayISO()}.csv`, '﻿' + [header.join(';'), ...rows].join('\r\n'), 'text/csv;charset=utf-8')
+  download(`gynaeca-${todayISO()}.csv`, '﻿' + [header.join(';'), ...rows].join('\r\n'), 'text/csv;charset=utf-8')
 }
 
 export async function importJSON(file: File): Promise<{ days: number; courses: number }> {
   const data = JSON.parse(await file.text()) as Partial<BackupFile>
   if (data.app !== 'die-frau-zyklusblatt' || !Array.isArray(data.days)) {
-    throw new Error('Die Datei ist kein Zyklusblatt-Backup.')
+    throw new Error('Die Datei ist kein Gynaeca-Backup.')
   }
   const days = data.days.map((d) => ({ ...emptyDay(d.date), ...d }))
   const courses = (data.courses ?? []).map(({ id: _id, ...c }) => c)
