@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import type { AppData } from '../lib/useData'
 import { courseOn } from '../lib/useData'
 import { addDays, diffDays, monthName, parseISO, todayISO, weekdayShort, type ISODate } from '../lib/dates'
@@ -259,7 +259,7 @@ function CycleCard({ data, date, d, today, openSheet }: { data: AppData; date: I
         </span>
         <DropScale date={date} value={bleeding} />
       </div>
-      <p className="hint cc-crit">{bleeding > 0 ? lv.criterion : 'Tippen Sie auf einen Tropfen. Nochmal tippen ergibt einen halben Schritt.'}</p>
+      <p className="hint cc-crit">{bleeding > 0 ? lv.criterion : 'Tropfen antippen, nochmal tippen ergibt einen halben Schritt. Halten und ziehen geht auch.'}</p>
       {(zt !== null || pred || st) && (
         <ul className="cc-facts">
           {zt !== null && <li>{inPeriod ? `${diffDays(c!.start, date) + 1}. Periodentag` : `${zt}. Zyklustag`}</li>}
@@ -275,12 +275,30 @@ function CycleCard({ data, date, d, today, openSheet }: { data: AppData; date: I
 
 /**
  * Blutung 0–5 in 0,5er-Schritten: Tropfen antippen (nochmal = halber Schritt weniger)
- * oder mit dem Finger über die Tropfen ziehen.
+ * oder halten und ziehen wie ein Regler. Beim Halten/Ziehen zeigt eine Blase Stufe und Kriterium.
  */
+const DROP = 'M12 2.5s-6.5 7.3-6.5 12a6.5 6.5 0 0 0 13 0c0-4.7-6.5-12-6.5-12z'
+const HOLD_MS = 280
+
 function DropScale({ date, value }: { date: ISODate; value: number }) {
   const [draft, setDraft] = useState<number | null>(null)
-  const st = useRef<{ x: number; rect: DOMRect; dragging: boolean; last: number } | null>(null)
+  const [tipX, setTipX] = useState<number | null>(null)
+  const st = useRef<{ x: number; rect: DOMRect; dragging: boolean; last: number; timer: number } | null>(null)
+  const tipRef = useRef<HTMLSpanElement>(null)
   const v = draft ?? value
+  // Blase am Finger ausrichten, aber nie über den rechten Rand der Skala hinaus
+  useLayoutEffect(() => {
+    const el = tipRef.current
+    const s = st.current
+    if (!el || tipX === null || !s) return
+    const w = el.offsetWidth
+    const left = Math.min(tipX - w / 2, s.rect.width - w)
+    el.style.left = `${left}px`
+    el.style.setProperty('--ax', `${tipX - left}px`)
+  }, [tipX, v])
+  useEffect(() => () => {
+    if (st.current) clearTimeout(st.current.timer)
+  }, [])
   const at = (clientX: number, rect: DOMRect) => {
     const rel = (clientX - rect.left) / rect.width
     return Math.max(0, Math.min(5, Math.round(rel * 10) / 2))
@@ -291,22 +309,51 @@ function DropScale({ date, value }: { date: ISODate; value: number }) {
     if (value === i - 0.5) return i - 1
     return i
   }
+  const startDrag = (clientX: number) => {
+    const s = st.current
+    if (!s) return
+    s.dragging = true
+    clearTimeout(s.timer)
+    navigator.vibrate?.(8)
+    move(clientX)
+  }
+  const move = (clientX: number) => {
+    const s = st.current
+    if (!s) return
+    const n = at(clientX, s.rect)
+    if (n !== s.last) {
+      s.last = n
+      navigator.vibrate?.(4)
+    }
+    setDraft(n)
+    setTipX(Math.max(0, Math.min(s.rect.width, clientX - s.rect.left)))
+  }
+  const end = () => {
+    const s = st.current
+    if (s) clearTimeout(s.timer)
+    st.current = null
+    setDraft(null)
+    setTipX(null)
+    return s
+  }
+  const lv = bleedingLevel(v)
   return (
     <div
-      className="dropscale"
+      className={`dropscale${tipX !== null ? ' dragging' : ''}`}
       role="slider"
       tabIndex={0}
       aria-label="Blutungsstärke 0 bis 5"
       aria-valuemin={0}
       aria-valuemax={5}
       aria-valuenow={v}
-      aria-valuetext={`${fmt(v)}, ${bleedingLevel(v).label}`}
+      aria-valuetext={`${fmt(v)}, ${lv.label}`}
       onKeyDown={(e) => {
         if (e.key === 'ArrowRight' || e.key === 'ArrowUp') updateDay(date, { bleeding: Math.min(5, value + 0.5) })
         else if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') updateDay(date, { bleeding: Math.max(0, value - 0.5) })
         else return
         e.preventDefault()
       }}
+      onContextMenu={(e) => e.preventDefault()}
       onPointerDown={(e) => {
         const el = e.currentTarget
         try {
@@ -314,26 +361,23 @@ function DropScale({ date, value }: { date: ISODate; value: number }) {
         } catch {
           /* egal */
         }
-        st.current = { x: e.clientX, rect: el.getBoundingClientRect(), dragging: false, last: value }
+        const x = e.clientX
+        const timer = window.setTimeout(() => startDrag(st.current?.x ?? x), HOLD_MS)
+        st.current = { x, rect: el.getBoundingClientRect(), dragging: false, last: value, timer }
       }}
       onPointerMove={(e) => {
         const s = st.current
         if (!s) return
-        if (!s.dragging && Math.abs(e.clientX - s.x) > 8) s.dragging = true
-        if (s.dragging) {
-          const n = at(e.clientX, s.rect)
-          if (n !== s.last) {
-            s.last = n
-            navigator.vibrate?.(4)
-          }
-          setDraft(n)
+        if (!s.dragging) {
+          if (Math.abs(e.clientX - s.x) > 8) startDrag(e.clientX)
+          else s.x = e.clientX
+          return
         }
+        move(e.clientX)
       }}
       onPointerUp={(e) => {
-        const s = st.current
-        st.current = null
+        const s = end()
         if (!s) return
-        setDraft(null)
         if (s.dragging) {
           if (s.last !== value) updateDay(date, { bleeding: s.last })
         } else {
@@ -342,22 +386,27 @@ function DropScale({ date, value }: { date: ISODate; value: number }) {
         }
       }}
       onPointerCancel={() => {
-        st.current = null
-        setDraft(null)
+        end()
       }}
     >
+      {tipX !== null && (
+        <span ref={tipRef} className="ds-tip" role="status">
+          <b>{v > 0 ? `${fmt(v)} · ${lv.label}` : 'keine Blutung'}</b>
+          {v > 0 && <small>{lv.criterion}</small>}
+        </span>
+      )}
       {[1, 2, 3, 4, 5].map((i) => {
         const fill = Math.max(0, Math.min(1, v - (i - 1)))
         return (
-          <span key={i} className={`ds-drop${fill === 1 ? ' full' : fill > 0 ? ' half' : ''}`}>
+          <span key={i} className={`ds-drop${fill === 1 ? ' is-full' : fill > 0 ? ' is-half' : ''}`}>
             <svg viewBox="0 0 24 24" aria-hidden="true">
               <defs>
                 <clipPath id={`half-${i}`}>
                   <rect x="0" y="12" width="24" height="12" />
                 </clipPath>
               </defs>
-              <path d="M12 2.5s-6.5 7.3-6.5 12a6.5 6.5 0 0 0 13 0c0-4.7-6.5-12-6.5-12z" className="ds-out" />
-              {fill > 0 && <path d="M12 2.5s-6.5 7.3-6.5 12a6.5 6.5 0 0 0 13 0c0-4.7-6.5-12-6.5-12z" className="ds-fill" clipPath={fill < 1 ? `url(#half-${i})` : undefined} />}
+              {fill > 0 && <path d={DROP} className="ds-fill" clipPath={fill < 1 ? `url(#half-${i})` : undefined} />}
+              <path d={DROP} className="ds-out" />
             </svg>
           </span>
         )

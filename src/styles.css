@@ -585,12 +585,11 @@ input:not([type]), input[type=text], textarea, select { background: var(--surfac
 .cc-facts { list-style: none; margin: 6px 0 2px; padding: 2px 0 2px 14px; border-left: 4px solid color-mix(in srgb, var(--blood) 45%, transparent); display: flex; flex-direction: column; gap: 6px; font-size: 16px; }
 .cc-facts .fert-fruchtbar { color: var(--fert-yes); }
 .cc-facts .fert-unfruchtbar, .cc-facts .fert-ab-abend { color: var(--fert-no); }
-.dropscale { display: flex; gap: 2px; touch-action: none; user-select: none; -webkit-user-select: none; cursor: pointer; padding: 2px; border-radius: 12px; }
+.dropscale { position: relative; display: flex; gap: 2px; touch-action: none; user-select: none; -webkit-user-select: none; cursor: pointer; padding: 2px; border-radius: 12px; }
 .ds-drop { width: 38px; height: 44px; display: grid; place-items: center; }
 .ds-drop svg { width: 34px; height: 34px; overflow: visible; }
 .ds-out { fill: none; stroke: var(--blood); stroke-width: 1.7; }
 .ds-fill { fill: var(--blood); }
-.ds-drop.full svg { transform: scale(1.04); }
 
 .dp-sec { padding: 18px 2px 14px; border-bottom: 1px solid var(--line); }
 .dp-sec-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
@@ -960,3 +959,10 @@ h3 { font-size: 12px; letter-spacing: .08em; }
 .cal-track > .cal-grid { width: calc(100% / 3); flex: none; padding: 0 10px; }
 /* Navigation liegt über dem Inhalt (auch über hervorgehobenen Kalendertagen) */
 .tabbar { z-index: 20; }
+
+/* Tropfenskala: alle Tropfen gleich groß auf einer Linie; Halten/Ziehen zeigt eine Blase */
+.ds-drop, .ds-drop svg { transform: none !important; transition: none; }
+.ds-tip { position: absolute; bottom: calc(100% + 10px); left: 0; width: max-content; max-width: 220px; padding: 8px 11px; border-radius: 12px; background: var(--surface-2); border: 1px solid var(--hair, var(--line)); color: var(--ink); box-shadow: 0 6px 20px rgb(0 0 0 / .25); pointer-events: none; z-index: 5; text-align: center; }
+.ds-tip b { display: block; font-size: 14px; font-weight: 600; color: var(--blood); }
+.ds-tip small { display: block; margin-top: 2px; font-size: 12px; line-height: 1.35; color: var(--muted); white-space: normal; }
+.ds-tip::after { content: ''; position: absolute; left: var(--ax, 50%); top: 100%; width: 10px; height: 10px; background: var(--surface-2); border-right: 1px solid var(--hair, var(--line)); border-bottom: 1px solid var(--hair, var(--line)); transform: translate(-50%, -5px) rotate(45deg); }
