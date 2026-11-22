@@ -6,6 +6,7 @@ import type { Settings } from '../lib/model'
 import { Chip } from './Sheet'
 import { loadDemo } from '../lib/demo'
 import { NFP_DISCLAIMER } from '../lib/knowledge'
+import { Icon } from './Icons'
 
 function Toggle({ label, hint, on, onChange }: { label: string; hint?: string; on: boolean; onChange: (v: boolean) => void }) {
   return (
@@ -41,16 +42,32 @@ function NumberSetting({ label, value, min, max, placeholder, onChange }: { labe
   )
 }
 
-function Section({ title, children }: { title: string; children: ReactNode }) {
+function Section({ title, icon, children }: { title: string; icon: string; children: ReactNode }) {
   return (
-    <section className="card">
-      <h2>{title}</h2>
-      {children}
+    <section className="set-group">
+      <h2 className="set-title">
+        <Icon name={icon} size={18} />
+        {title}
+      </h2>
+      <div className="set-card">{children}</div>
     </section>
   )
 }
 
-export default function SettingsView({ data, onBack, onReport }: { data: AppData; onBack: () => void; onReport: () => void }) {
+function LinkRow({ icon, label, hint, onClick }: { icon: string; label: string; hint?: string; onClick: () => void }) {
+  return (
+    <button className="list-row" onClick={onClick}>
+      <span className="lr-icon"><Icon name={icon} /></span>
+      <span className="lr-main">
+        {label}
+        {hint && <small>{hint}</small>}
+      </span>
+      <Icon name="chevron" className="lr-chev" />
+    </button>
+  )
+}
+
+export default function SettingsView({ data, onReport, onScales }: { data: AppData; onReport: () => void; onScales: () => void }) {
   const s = data.settings
   const setModule = (k: keyof Settings['modules'], v: boolean) => saveSettings({ modules: { ...s.modules, [k]: v } })
   const [msg, setMsg] = useState<string | null>(null)
@@ -62,53 +79,11 @@ export default function SettingsView({ data, onBack, onReport }: { data: AppData
 
   return (
     <div className="page settings">
-      <header className="page-head">
-        <button className="icon-btn" onClick={onBack} aria-label="Zurück">‹</button>
+      <header className="tab-head">
         <h1>Einstellungen</h1>
       </header>
       <div className="page-body">
-        <Section title="Module">
-          <p className="hint">Die Periode wird immer erfasst. Alles andere schalten Sie nach Bedarf dazu.</p>
-          <Toggle label="Schmerzen & Medikamente" hint="Schmerzskala 0–10, ab 4 Frage nach Schmerzmitteln" on={s.modules.pain} onChange={(v) => setModule('pain', v)} />
-          <Toggle
-            label="Endometriose-Fragen"
-            hint="Schmerzarten mit Stärke, Rücken, Alltag, Stress, Bewegung"
-            on={s.modules.endo}
-            onChange={(v) => saveSettings({ modules: { ...s.modules, endo: v, pain: v ? true : s.modules.pain } })}
-          />
-          <Toggle label="Begleitsymptome" hint="Kopfschmerz, Verdauung, Stimmung und eigene Tags" on={s.modules.symptoms} onChange={(v) => setModule('symptoms', v)} />
-          <Toggle label="Hormonelle Verhütung" hint="Balken links neben der Tageszahl" on={s.modules.contraception} onChange={(v) => setModule('contraception', v)} />
-          <Toggle label="Fruchtbarkeit" hint="Natürliche Familienplanung (symptothermale Methode)" on={s.modules.nfp} onChange={(v) => setModule('nfp', v)} />
-          {s.modules.nfp && (
-            <div className="sub-toggles">
-              <p className="hint">Zeichen für die Auswertung. Die Temperatur ist immer dabei, dazu Schleim oder Muttermund.</p>
-              <Toggle label="Zervixschleim" hint="Standard: am Muttermund entnommen" on={s.modules.nfpMucus} onChange={(v) => setModule('nfpMucus', v)} />
-              <Toggle
-                label="Muttermund"
-                hint={s.modules.nfpMucus ? 'Wird zusätzlich notiert, ausgewertet wird der Schleim' : 'Ersetzt den Schleim in der Auswertung'}
-                on={s.modules.nfpCervix}
-                onChange={(v) => setModule('nfpCervix', v)}
-              />
-              <Toggle label="LH-Test" hint="Zur Bestätigung, ändert die Auswertung nicht" on={s.modules.lh} onChange={(v) => setModule('lh', v)} />
-              <p className="hint">{NFP_DISCLAIMER}</p>
-            </div>
-          )}
-        </Section>
-
-        <Section title="Angaben für Hinweise">
-          <p className="hint">Damit die App Zykluslängen passend zu Ihrem Alter einordnen kann. Bleibt auf diesem Gerät.</p>
-          <NumberSetting
-            label="Geburtsjahr"
-            value={s.birthYear}
-            min={1940}
-            max={new Date().getFullYear() - 8}
-            placeholder="z. B. 1992"
-            onChange={(v) => saveSettings({ birthYear: v })}
-          />
-          <NumberSetting label="Alter bei der ersten Periode" value={s.menarcheAge} min={7} max={20} placeholder="z. B. 12" onChange={(v) => saveSettings({ menarcheAge: v })} />
-        </Section>
-
-        <Section title="Zyklusberechnung">
+        <Section title="Mein Zyklus" icon="drop">
           <Toggle
             label="Schmierblutung mitzählen"
             hint="Reine Schmierblutung direkt vor oder nach der Periode zählt zur Blutungsdauer"
@@ -128,7 +103,50 @@ export default function SettingsView({ data, onBack, onReport }: { data: AppData
           </div>
         </Section>
 
-        <Section title="Schmerzmittel-Favoriten">
+        <Section title="Module" icon="layers">
+          <p className="hint">Die Periode wird immer erfasst. Alles andere schalten Sie nach Bedarf dazu.</p>
+          <Toggle label="Schmerzen & Medikamente" hint="Schmerzskala 0–10, ab 4 Frage nach Schmerzmitteln" on={s.modules.pain} onChange={(v) => setModule('pain', v)} />
+          <Toggle
+            label="Endometriose-Fragen"
+            hint="Schmerzarten mit Stärke, Rücken, Alltag, Stress, Bewegung"
+            on={s.modules.endo}
+            onChange={(v) => saveSettings({ modules: { ...s.modules, endo: v, pain: v ? true : s.modules.pain } })}
+          />
+          <Toggle label="Begleitsymptome" hint="Kopfschmerz, Verdauung, Stimmung und eigene Tags" on={s.modules.symptoms} onChange={(v) => setModule('symptoms', v)} />
+          <Toggle label="Hormonelle Verhütung" hint="Präparat und Einnahmezeitraum, sichtbar in der Tagesansicht" on={s.modules.contraception} onChange={(v) => setModule('contraception', v)} />
+          <Toggle label="Fruchtbarkeit" hint="Natürliche Familienplanung (symptothermale Methode)" on={s.modules.nfp} onChange={(v) => setModule('nfp', v)} />
+          {s.modules.nfp && (
+            <div className="sub-toggles">
+              <p className="hint">Zeichen für die Auswertung. Die Temperatur ist immer dabei, dazu Schleim oder Muttermund.</p>
+              <Toggle label="Zervixschleim" hint="Standard: am Muttermund entnommen" on={s.modules.nfpMucus} onChange={(v) => setModule('nfpMucus', v)} />
+              <Toggle
+                label="Muttermund"
+                hint={s.modules.nfpMucus ? 'Wird zusätzlich notiert, ausgewertet wird der Schleim' : 'Ersetzt den Schleim in der Auswertung'}
+                on={s.modules.nfpCervix}
+                onChange={(v) => setModule('nfpCervix', v)}
+              />
+              <Toggle label="LH-Test" hint="Zur Bestätigung, ändert die Auswertung nicht" on={s.modules.lh} onChange={(v) => setModule('lh', v)} />
+              <p className="hint">{NFP_DISCLAIMER}</p>
+            </div>
+          )}
+        </Section>
+
+        <Section title="Persönlich" icon="user">
+          <p className="hint">Damit die App Zykluslängen passend zu Ihrem Alter einordnen kann. Bleibt auf diesem Gerät.</p>
+          <NumberSetting
+            label="Geburtsjahr"
+            value={s.birthYear}
+            min={1940}
+            max={new Date().getFullYear() - 8}
+            placeholder="z. B. 1992"
+            onChange={(v) => saveSettings({ birthYear: v })}
+          />
+          <NumberSetting label="Alter bei der ersten Periode" value={s.menarcheAge} min={7} max={20} placeholder="z. B. 12" onChange={(v) => saveSettings({ menarcheAge: v })} />
+        </Section>
+
+        
+
+        <Section title="Schmerzmittel" icon="pill">
           {s.medFavorites.map((f) => (
             <div key={f.name} className="fav-row">
               <span>
@@ -158,7 +176,7 @@ export default function SettingsView({ data, onBack, onReport }: { data: AppData
         </Section>
 
         {s.modules.contraception && (
-          <Section title="Verhütungs-Präparate">
+          <Section title="Verhütungs-Präparate" icon="pill">
             <div className="chips">
               {s.contraceptionFavorites.map((f) => (
                 <Chip key={f} onClick={() => saveSettings({ contraceptionFavorites: s.contraceptionFavorites.filter((x) => x !== f) })} title="Tippen zum Entfernen">
@@ -170,7 +188,7 @@ export default function SettingsView({ data, onBack, onReport }: { data: AppData
         )}
 
         {s.customSymptoms.length > 0 && (
-          <Section title="Eigene Symptome">
+          <Section title="Eigene Symptome" icon="sparkle">
             <div className="chips">
               {s.customSymptoms.map((f) => (
                 <Chip key={f} onClick={() => saveSettings({ customSymptoms: s.customSymptoms.filter((x) => x !== f) })} title="Tippen zum Entfernen">
@@ -181,10 +199,14 @@ export default function SettingsView({ data, onBack, onReport }: { data: AppData
           </Section>
         )}
 
-        <Section title="Export & Datensicherung">
+        <Section title="Berichte & Hilfe" icon="doc">
+          <LinkRow icon="doc" label="Arztbericht / PDF" hint="Zyklusblatt für die Praxis drucken oder speichern" onClick={onReport} />
+          <LinkRow icon="info" label="Skalen erklärt" hint="Blutungsstärke 0–5 und Schmerz 0–10" onClick={onScales} />
+        </Section>
+
+        <Section title="Meine Daten" icon="shield">
           <p className="hint">Alle Daten liegen nur auf diesem Gerät (im Browser-Speicher). Es gibt keinen Server und kein Konto. Lege regelmäßig ein Backup an.</p>
           <div className="stack">
-            <button className="btn primary" onClick={onReport}>Arztbericht / PDF-Zyklusblatt</button>
             <button className="btn" onClick={() => exportJSON()}>Backup als JSON speichern</button>
             <button className="btn" onClick={() => exportCSV()}>Tabelle als CSV (Excel)</button>
             <button className="btn" onClick={() => fileRef.current?.click()}>Backup wiederherstellen …</button>
@@ -245,7 +267,7 @@ export default function SettingsView({ data, onBack, onReport }: { data: AppData
           {msg && <p className="msg">{msg}</p>}
         </Section>
 
-        <p className="hint center">Zyklusblatt v0.2 · offline nutzbar · zum Startbildschirm hinzufügen für App-Modus</p>
+        <p className="hint center">Gynaeca 0.3 · offline nutzbar · Teilen › „Zum Home-Bildschirm“ für den App-Modus</p>
       </div>
     </div>
   )

@@ -7,13 +7,14 @@ import { medCount, type DayEntry } from '../lib/model'
 import { updateDay } from '../lib/db'
 import BleedingCell from './BleedingCell'
 import type { SheetKind } from '../App'
+import { Icon } from './Icons'
 
 interface Props {
   data: AppData
   ym: { y: number; m0: number }
   setYm: (v: { y: number; m0: number }) => void
   openSheet: (k: SheetKind, d: ISODate) => void
-  openMenu: () => void
+  onBack: () => void
   onPickDay: (d: ISODate) => void
 }
 
@@ -50,7 +51,7 @@ const CERVIX_OPEN = { geschlossen: '●', leicht: '◐', offen: '○' } as const
 const CERVIX_FIRM = { hart: 'h', mittel: 'm', weich: 'w' } as const
 const CERVIX_POS = { tief: '↓', mittel: '→', hoch: '↑' } as const
 
-export default function MonthView({ data, ym, setYm, openSheet, openMenu, onPickDay }: Props) {
+export default function MonthView({ data, ym, setYm, openSheet, onBack, onPickDay }: Props) {
   const { settings, days, cycles } = data
   const { y, m0 } = ym
   const n = daysInMonth(y, m0)
@@ -90,12 +91,12 @@ export default function MonthView({ data, ym, setYm, openSheet, openMenu, onPick
           swipe.current = null
         }}
       >
-        <button className="icon-btn" onClick={openMenu} aria-label="Menü">☰</button>
-        <button className="icon-btn" onClick={() => go(-1)} aria-label="Vorheriger Monat">‹</button>
+        <button className="icon-btn" onClick={onBack} aria-label="Zurück"><Icon name="back" /></button>
+        <button className="icon-btn" onClick={() => go(-1)} aria-label="Vorheriger Monat"><Icon name="back" size={20} /></button>
         <button className="month-title" onClick={() => setYm({ y: Number(today.slice(0, 4)), m0: Number(today.slice(5, 7)) - 1 })} title="Zum heutigen Monat">
           {monthName(m0)} <span className="muted">{y}</span>
         </button>
-        <button className="icon-btn" onClick={() => go(1)} aria-label="Nächster Monat">›</button>
+        <button className="icon-btn" onClick={() => go(1)} aria-label="Nächster Monat"><Icon name="chevron" size={20} /></button>
         <span className="spacer" />
       </header>
 

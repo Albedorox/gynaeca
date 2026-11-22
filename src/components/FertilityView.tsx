@@ -1,3 +1,4 @@
+import { Icon } from './Icons'
 import { useMemo, useState } from 'react'
 import type { AppData } from '../lib/useData'
 import { addDays, diffDays, formatDE, todayISO, weekdayShort, type ISODate } from '../lib/dates'
@@ -110,7 +111,7 @@ function Page({ title, onBack, onPrint, children }: { title: string; onBack: () 
   return (
     <div className="page fertility">
       <header className="page-head">
-        <button className="icon-btn" onClick={onBack} aria-label="Zurück">‹</button>
+        <button className="icon-btn" onClick={onBack} aria-label="Zurück"><Icon name="back" /></button>
         <h1>{title}</h1>
         <span className="spacer" />
         {onPrint && <button className="btn ghost small" onClick={onPrint}>Drucken</button>}

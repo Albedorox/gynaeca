@@ -1,3 +1,4 @@
+import { Icon } from './Icons'
 import { useState } from 'react'
 import type { AppData } from '../lib/useData'
 import { courseOn } from '../lib/useData'
@@ -25,7 +26,7 @@ export default function Report({ data, onBack }: { data: AppData; onBack: () => 
   return (
     <div className="page report-page">
       <header className="page-head no-print">
-        <button className="icon-btn" onClick={onBack} aria-label="Zurück">‹</button>
+        <button className="icon-btn" onClick={onBack} aria-label="Zurück"><Icon name="back" /></button>
         <h1>Arztbericht</h1>
         <span className="spacer" />
         <select value={months} onChange={(e) => setMonths(Number(e.target.value))} aria-label="Zeitraum">
@@ -37,7 +38,7 @@ export default function Report({ data, onBack }: { data: AppData; onBack: () => 
         <button className="btn primary" onClick={() => window.print()}>Drucken / PDF</button>
       </header>
       <div className="report">
-        <h1>Zyklusblatt</h1>
+        <h1>Gynaeca · Zyklusblatt</h1>
         <p>Zeitraum {formatDE(from)} bis {formatDE(today)} · erstellt am {formatDE(today)}</p>
 
         <h2>Zyklen</h2>

@@ -136,3 +136,29 @@ export function cycleStats(cycles: Cycle[]): CycleStats {
     avgBleed: avg(cycles.map((c) => c.bleedDays)),
   }
 }
+
+export interface Prediction {
+  /** Voraussichtlicher Beginn der nächsten Periode */
+  start: ISODate
+  /** Voraussichtliche Dauer in Tagen */
+  days: number
+  /** Zugrunde gelegte Zykluslänge */
+  length: number
+}
+
+/**
+ * Grobe Prognose der nächsten Periode: Durchschnitt der letzten (bis zu 6) abgeschlossenen Zyklen.
+ * Braucht mindestens einen abgeschlossenen Zyklus. Ist die Periode schon überfällig, gibt es keine Prognose.
+ * Nur zur Orientierung, nicht zur Verhütung.
+ */
+export function predictNext(cycles: Cycle[], today: ISODate): Prediction | null {
+  const cur = cycles[cycles.length - 1]
+  if (!cur || cur.length !== null) return null
+  const closed = cycles.filter((c) => c.length !== null).slice(-6)
+  if (closed.length === 0) return null
+  const length = Math.round(closed.reduce((s, c) => s + (c.length as number), 0) / closed.length)
+  const days = Math.max(1, Math.round(closed.reduce((s, c) => s + c.bleedDays, 0) / closed.length))
+  const start = addDays(cur.start, length)
+  if (start <= today) return null
+  return { start, days, length }
+}

@@ -27,7 +27,7 @@ export async function getSettings(): Promise<Settings> {
 }
 
 export function mergeSettings(s: Partial<Settings> | undefined): Settings {
-  return { ...DEFAULT_SETTINGS, ...s, modules: { ...DEFAULT_SETTINGS.modules, ...s?.modules }, id: 'app' }
+  return { ...DEFAULT_SETTINGS, ...s, modules: { ...DEFAULT_SETTINGS.modules, ...s?.modules }, appearance: { ...DEFAULT_SETTINGS.appearance, ...s?.appearance }, id: 'app' }
 }
 
 export async function saveSettings(patch: Partial<Settings>): Promise<void> {
