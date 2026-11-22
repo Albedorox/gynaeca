@@ -215,7 +215,7 @@ Vorschlag: Die App richtet sich nach dem Basis-Fragebogen der Arbeitsgemeinschaf
 | Schmerzen je 0 bis 10: Regelschmerz, zyklisch außerhalb der Periode, azyklisch, Wasserlassen, Stuhlgang, Geschlechtsverkehr; jeweils Wirkung von Hormonen oder Schmerzmitteln | Schmerz 0 bis 10 plus Medikament | teilweise: Schmerzarten getrennt fehlen |
 | Blut im Urin, Darmbeschwerden | Symptome | teilweise |
 | Beeinträchtigung von Alltag, Lebensqualität, Sexualität, Stimmung (niemals bis immer) |  | fehlt |
-| Komplementäre Verfahren mit Wirkung: Sport, Yoga, Physiotherapie, Osteopathie, Ernährung, Psychotherapie u. a. |  | fehlt |
+| Komplementäre Verfahren mit Wirkung: Sport, Yoga, Physiotherapie, Osteopathie, Ernährung, Psychotherapie u. a. | Bewegung, Entspannung, Hilfsmittel, Ernährungstagebuch, Vergleich mit Schmerz | teilweise: Osteopathie und Psychotherapie fehlen |
 | Modul Selbstwirksamkeit (FESS, 10 Aussagen, 0 bis 6) |  | fehlt |
 | Kinderwunsch, Voroperationen, Vorerkrankungen |  | fehlt (einmalig, nicht täglich) |
 
@@ -225,12 +225,44 @@ Zusätzlich nach Mechsner: auf vegetative Begleiterscheinungen bei starken Schme
 
 Der Beckenboden kommt im AGEM-Fragebogen nicht vor; er sollte nach Angabe der Gynäkologin ergänzt werden. \[Praxis bestätigt\]
 
+### Selbstfürsorge und Ernährung bei Endometriose \[Projektvorgabe 2026-11-22; Bestätigung durch die Gynäkologin offen\]
+
+Ernährung, Bewegung, Entspannung und Wärme sind keine Therapie der Endometriose, beeinflussen aber Entzündung, Stress und Schmerzerleben. Die App erfasst sie deshalb täglich, an jedem Tag und nicht nur während der Periode, und stellt sie dem Schmerz gegenüber.
+
+**Ernährung.** Empfohlen wird eine angepasste mediterrane Ernährung:
+
+| Mehr davon | Eher meiden |
+| --- | --- |
+| viel frisches Gemüse und Obst | rotes Fleisch und Wurst |
+| Vollkorn, Hülsenfrüchte | Zucker, Kuchen, Süßigkeiten |
+| Fisch (Omega-3-Fettsäuren) | Fertigessen, Fast Food, Weißmehl |
+| Olivenöl, Nüsse und Samen | Alkohol, viel Kaffee |
+| Kräutertee, ausreichend trinken (ca. 1,5 l) | individuell: Milchprodukte, scharfe Speisen, Gluten |
+
+Entzündungshemmend wirken als Ergänzung: Omega-3, Vitamin D3, Kurkuma, Ingwer und Bromelain (aus Ananas). Dosierung und Einnahme bitte mit der Praxis absprechen, vor allem bei Gerinnungshemmern (Omega-3, Kurkuma, Ingwer, Bromelain) und bei Vitamin D3 (Spiegel bestimmen lassen). \[Literatur: Hinweis zu Wechselwirkungen\]
+
+Die Wirkung einzelner Lebensmittel ist bei Endometriose nur begrenzt durch Studien belegt; ein Ernährungstagebuch hilft, persönliche Auslöser zu erkennen, z. B. Blähbauch (Endo-Belly) oder mehr Schmerz nach einem „Cheat Day“. \[Literatur\]
+
+**Bewegung.** Mindestens 3 bis 5 Tage pro Woche je 30 Minuten moderate Bewegung (siehe oben). \[Praxis bestätigt\]
+
+**Entspannung und Achtsamkeit.** Atemübungen, Meditation, progressive Muskelentspannung, Bodyscan und Achtsamkeitsübungen senken Stress und das Stresshormon Cortisol und damit das Schmerzerleben. \[Praxis bestätigt: Stress und Cortisol wirken auf das Schmerzerleben\]
+
+**Hilfsmittel.** Wärme (Wärmepflaster, Wärmflasche, Körnerkissen, warmes Bad) entspannt die Beckenmuskulatur und lindert krampfartige Schmerzen; dazu TENS-Gerät und Massage. Viele nutzen Wärme auch außerhalb der Periode. \[Literatur\]
+
+Umsetzung in der App (Endometriose-Modul):
+
+- Tagesansicht: Bewegung in Minuten mit Wochenziel, Bewegungsart, Entspannungsübungen, Stress 0 bis 10, Hilfsmittel, Ernährung (günstig / eher meiden), Ergänzungsmittel, Getrunkenes, Mahlzeiten als Freitext, Verträglichkeit und ein Schalter „Cheat Day“.
+- Kurze geführte Übungen: Atmen (4 s ein, 6 s aus) und 5-4-3-2-1-Achtsamkeit; nach Abschluss automatisch eingetragen.
+- Endometriose-Tagebuch: Monatskalender je Bereich mit Schmerz und Blutung, Ernährungstagebuch, Vergleich des Schmerzes an Tagen mit und ohne Faktor (Cheat Day bzw. ungünstige Ernährung zählt auch für den Folgetag). Der Vergleich erscheint erst ab je 3 Tagen und ist als Hinweis, nicht als Beweis gekennzeichnet.
+- Arztbericht und CSV enthalten Zusammenfassung und Tageswerte.
+
 ### Fragen an die Gynäkologin
 
 - [ ] Welche Symptome fragen Sie bei Verdacht auf Endometriose standardmäßig ab, und welche fehlen in der Liste?
 - [ ] Nutzen Sie einen festen Fragebogen (z. B. Endometriose-Fragebogen der Stiftung Endometriose-Forschung, EHP-30)?
 - [ ] Wie viele Zyklen Dokumentation sind für Sie aussagekräftig?
 - [ ] Welche Kombinationen von Symptomen sind für Sie ein deutlicher Hinweis, den die App hervorheben sollte?
+- [ ] Stimmen die Listen „mehr davon / eher meiden“ und die Ergänzungsmittel? Sollen Dosierungen hinterlegt werden?
 
 ## NFP nach Sensiplan
 
@@ -482,6 +514,14 @@ NSAR (Ibuprofen, Naproxen) sind Mittel der ersten Wahl bei primärer Dysmenorrho
 | Ohne Hormone (NFP, Kondom) | natürlicher Zyklus |
 
 Unter hormoneller Verhütung ist die Blutung keine echte Menstruation, und NFP-Auswertung ist nicht möglich. \[Literatur\]
+
+### Regelmäßige gynäkologische Medikamente \[Projektvorgabe 2026-11-22\]
+
+Mittel, die über Wochen genommen werden, erfasst die App wie die Verhütung als Einnahmezeitraum (Beginn, Ende, Dosis frei), aber mehrere gleichzeitig. Beispiele: Agnus castus (Mönchspfeffer, z. B. Agnucaston) zur Zyklusregulierung, Dienogest, Progesteron, Eisen. Sie beeinflussen die NFP-Auswertung nicht automatisch; Gestagene wie Dienogest unterdrücken aber meist den Eisprung, die Auswertung ist dann nicht aussagekräftig. \[Literatur\]
+
+### Geschlechtsverkehr \[Projektvorgabe 2026-11-22\]
+
+Für Verhütung und Kinderwunsch erfasst die App Geschlechtsverkehr pro Tag: ungeschützt, mit Kondom oder ausdrücklich keiner. An laut NFP möglicherweise fruchtbaren Tagen weist die App bei ungeschütztem GV darauf hin. Schmerz beim GV (Dyspareunie) bleibt eine eigene Schmerzart. Im Bericht erscheinen die Anzahl der Tage und die ungeschützten Tage.
 
 ### Fragen an die Gynäkologin
 

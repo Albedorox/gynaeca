@@ -5,12 +5,15 @@ import { cycleStats, type Cycle } from '../lib/cycles'
 import { medCount } from '../lib/model'
 import { MonthsZoom } from './Overview'
 import { Icon } from './Icons'
+import { careSummary, painCompare, comparable, unhealthyDay, movedEnough } from '../lib/care'
+import { PainCompareCard } from './CareView'
 
 interface Props {
   data: AppData
   onReport: () => void
   onTable: () => void
   onFertility: () => void
+  onCare: () => void
   onPickMonth: (y: number, m0: number) => void
 }
 
@@ -19,7 +22,7 @@ interface Props {
 const CYCLE_OK = [24, 38] as const
 const BLEED_OK = [1, 8] as const
 
-export default function Stats({ data, onReport, onTable, onFertility, onPickMonth }: Props) {
+export default function Stats({ data, onReport, onTable, onFertility, onCare, onPickMonth }: Props) {
   const [tab, setTab] = useState<'cycles' | 'year'>('cycles')
   return (
     <div className="page stats">
@@ -38,6 +41,7 @@ export default function Stats({ data, onReport, onTable, onFertility, onPickMont
           <BarCard title="Zykluslänge" unit="Tage" cycles={data.cycles.filter((c) => c.length !== null)} value={(c) => c.length as number} ok={CYCLE_OK} />
           <BarCard title="Periodendauer" unit="Tage" cycles={data.cycles} value={(c) => c.bleedDays} ok={BLEED_OK} />
           <PainCard data={data} />
+          {data.settings.modules.endo && <CareCard data={data} onCare={onCare} />}
 
           <button className="promo" onClick={onReport}>
             <span className="promo-icon"><Icon name="doc" size={28} /></span>
@@ -53,6 +57,13 @@ export default function Stats({ data, onReport, onTable, onFertility, onPickMont
               <span className="lr-main">Zyklusblatt als Tabelle<small>Ein Monat, alle Werte pro Tag, zum Eintragen</small></span>
               <Icon name="chevron" className="lr-chev" />
             </button>
+            {data.settings.modules.endo && (
+              <button className="list-row" onClick={onCare}>
+                <span className="lr-icon"><Icon name="leaf" /></span>
+                <span className="lr-main">Endometriose-Tagebuch<small>Ernährung, Bewegung, Entspannung, Hilfsmittel im Kalender</small></span>
+                <Icon name="chevron" className="lr-chev" />
+              </button>
+            )}
             {data.settings.modules.nfp && (
               <button className="list-row" onClick={onFertility}>
                 <span className="lr-icon"><Icon name="thermo" /></span>
@@ -192,5 +203,37 @@ function History({ data }: { data: AppData }) {
         )
       })}
     </section>
+  )
+}
+
+function CareCard({ data, onCare }: { data: AppData; onCare: () => void }) {
+  const today = todayISO()
+  const s = careSummary(data.dayList, addDays(today, -29), today)
+  const food = painCompare(data.days, addDays(today, -89), today, unhealthyDay, 1)
+  const move = painCompare(data.days, addDays(today, -89), today, movedEnough, 0)
+  const fmt = (n: number) => String(n).replace('.', ',')
+  return (
+    <>
+      <section className="card">
+        <div className="card-head">
+          <h2>Selbstfürsorge</h2>
+          <small className="muted">letzte 30 Tage</small>
+        </div>
+        <div className="kpis three flat">
+          <div className="kpi small"><small>Bewegung/Woche</small><b>{fmt(s.movePerWeek)}</b></div>
+          <div className="kpi small"><small>Entspannung</small><b>{s.relaxDays}</b></div>
+          <div className="kpi small"><small>Hilfsmittel</small><b>{s.aidDays}</b></div>
+        </div>
+        <div className="kpis three flat">
+          <div className="kpi small"><small>Ernährung</small><b>{s.foodDays}</b></div>
+          <div className="kpi small"><small>Cheat Days</small><b>{s.cheatDays}</b></div>
+          <div className="kpi small"><small>Ø Stress</small><b>{s.avgStress === null ? '–' : fmt(s.avgStress)}</b></div>
+        </div>
+        <p className="hint">Bewegung: Tage mit mindestens 30 Minuten, Ziel 3–5 pro Woche. Übrige Werte in Tagen.</p>
+        <button className="link" onClick={onCare}>Zum Tagebuch <Icon name="chevron" size={16} /></button>
+      </section>
+      {comparable(food) && <PainCompareCard title="Ernährung und Schmerz" cmp={food} withLabel="nach Cheat Day / ungünstig" withoutLabel="sonst" />}
+      {comparable(move) && <PainCompareCard title="Bewegung und Schmerz" cmp={move} withLabel="mit ≥ 30 min Bewegung" withoutLabel="weniger Bewegung" />}
+    </>
   )
 }

@@ -1,7 +1,7 @@
 import { db, getSettings } from './db'
 import { todayISO } from './dates'
 import type { ContraceptionCourse, DayEntry, Settings } from './model'
-import { emptyDay } from './model'
+import { normalizeDay } from './model'
 import { BACK_LOCATIONS, PAIN_TYPES } from './knowledge'
 
 export interface BackupFile {
@@ -48,16 +48,18 @@ function decimal(n: number | null): string {
 
 /** CSV mit Semikolon und Dezimalkomma, damit Excel (deutsch) sie direkt öffnet. */
 export async function exportCSV(): Promise<void> {
-  const days = await db.days.orderBy('date').toArray()
+  const days = (await db.days.orderBy('date').toArray()).map(normalizeDay)
   const courses = await db.courses.toArray()
   const header = [
     'Datum', 'Blutung (0-5)', 'Schmierblutung', 'Schmerz (0-10)', 'Medikamente', 'Einnahmen gesamt',
     'Symptome', 'Notiz', 'Basaltemperatur', 'Temp. gestört', 'Zervixschleim',
     'Muttermund Öffnung', 'Muttermund Festigkeit', 'Muttermund Stellung', 'LH-Test', 'Verhütung',
-    'Schmerzarten (0-10)', 'Rücken', 'Schmerzcharakter', 'Alltag', 'Stress (0-10)', 'Bewegung/Entspannung', 'Schleim beobachtet',
+    'Schmerzarten (0-10)', 'Rücken', 'Schmerzcharakter', 'Alltag', 'Stress (0-10)', 'Bewegung/Entspannung (alt)', 'Schleim beobachtet',
+    'Bewegung (min)', 'Bewegungsart', 'Entspannung/Achtsamkeit', 'Hilfsmittel', 'Cheat Day', 'Ernährung', 'Ergänzungsmittel',
+    'Frühstück', 'Mittag', 'Abend', 'Zwischendurch', 'Getrunken (Gläser)', 'Verträglichkeit', 'Geschlechtsverkehr', 'Regelmäßige Medikamente',
   ]
   const rows = days.map((d) => {
-    const course = courses.find((c) => c.start <= d.date && (c.end === null || d.date <= c.end))
+    const course = courses.find((c) => !c.kind && c.start <= d.date && (c.end === null || d.date <= c.end))
     return [
       d.date,
       decimal(d.bleeding),
@@ -80,8 +82,23 @@ export async function exportCSV(): Promise<void> {
       (d.painCharacter ?? []).join(', '),
       (d.impairments ?? []).join(', '),
       d.stress ?? '',
-      (d.selfcare ?? []).join(', '),
+      '',
       d.mucusSource === 'muttermund' ? 'am Muttermund' : d.mucusSource === 'aussen' ? 'am Scheideneingang' : '',
+      d.movementMin ?? '',
+      d.movement.join(', '),
+      d.relax.join(', '),
+      d.aids.join(', '),
+      d.cheatDay ? 'ja' : '',
+      d.food.join(', '),
+      d.supplements.join(', '),
+      d.meals.morgens ?? '',
+      d.meals.mittags ?? '',
+      d.meals.abends ?? '',
+      d.meals.zwischendurch ?? '',
+      d.water ?? '',
+      d.foodReaction.join(', '),
+      d.sex === 'ungeschuetzt' ? 'ungeschützt' : d.sex === 'geschuetzt' ? 'mit Kondom' : d.sex === 'kein' ? 'nein' : '',
+      courses.filter((c) => c.kind === 'gyn' && c.start <= d.date && (c.end === null || d.date <= c.end)).map((c) => c.name).join(', '),
     ].map(csvCell).join(';')
   })
   download(`gynaeca-${todayISO()}.csv`, '﻿' + [header.join(';'), ...rows].join('\r\n'), 'text/csv;charset=utf-8')
@@ -92,7 +109,7 @@ export async function importJSON(file: File): Promise<{ days: number; courses: n
   if (data.app !== 'die-frau-zyklusblatt' || !Array.isArray(data.days)) {
     throw new Error('Die Datei ist kein Gynaeca-Backup.')
   }
-  const days = data.days.map((d) => ({ ...emptyDay(d.date), ...d }))
+  const days = data.days.map((d) => normalizeDay(d))
   const courses = (data.courses ?? []).map(({ id: _id, ...c }) => c)
   await db.transaction('rw', db.days, db.courses, db.settings, async () => {
     await db.days.clear()

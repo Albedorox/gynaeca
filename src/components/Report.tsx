@@ -5,6 +5,7 @@ import { courseOn } from '../lib/useData'
 import { formatDE, parseISO, shiftMonth, toISO, todayISO, weekdayShort } from '../lib/dates'
 import { cycleDay, cycleLabel, cycleStats } from '../lib/cycles'
 import { medCount } from '../lib/model'
+import { careLine, careSummary, comparable, foodLine, movedEnough, painCompare, relaxed, unhealthyDay, usedAids } from '../lib/care'
 
 /** Druckbares Zyklusblatt für den Arztbesuch. "Als PDF speichern" über den Druckdialog. */
 export default function Report({ data, onBack }: { data: AppData; onBack: () => void }) {
@@ -22,6 +23,16 @@ export default function Report({ data, onBack }: { data: AppData; onBack: () => 
   const painDays = days.filter((d) => (d.pain ?? 0) > 0)
   const avgPain = painDays.length ? (painDays.reduce((a, d) => a + (d.pain ?? 0), 0) / painDays.length).toFixed(1).replace('.', ',') : '–'
   const nfp = data.settings.modules.nfp
+  const mod = data.settings.modules
+  const gyn = data.courses.filter((c) => c.kind === 'gyn' && c.start <= today && (c.end === null || c.end >= from))
+  const sexDays = days.filter((d) => d.sex === 'geschuetzt' || d.sex === 'ungeschuetzt')
+  const care = careSummary(data.dayList, from, today)
+  const dec = (n: number | null) => (n === null ? '–' : String(n).replace('.', ','))
+  const top = (l: [string, number][]) => l.slice(0, 6).map(([k, v]) => `${k} ${v}×`).join(', ')
+  const cmpLine = (label: string, f: Parameters<typeof painCompare>[3], lag: number) => {
+    const c = painCompare(data.days, from, today, f, lag)
+    return comparable(c) ? `${label}: Ø Schmerz ${dec(c.withAvg)} (${c.withN} Tage) gegenüber ${dec(c.withoutAvg)} (${c.withoutN} Tage)` : null
+  }
 
   return (
     <div className="page report-page">
@@ -70,11 +81,48 @@ export default function Report({ data, onBack }: { data: AppData; onBack: () => 
           </p>
         )}
 
+        {mod.gynMeds && gyn.length > 0 && (
+          <p>
+            Regelmäßige Medikamente:{' '}
+            {gyn.map((c) => `${c.name}${c.dose ? ` (${c.dose})` : ''} ab ${formatDE(c.start)}${c.end ? ` bis ${formatDE(c.end)}` : ', läuft'}`).join('; ')}
+          </p>
+        )}
+        {mod.sex && sexDays.length > 0 && (
+          <p>
+            Geschlechtsverkehr an {sexDays.length} Tagen, davon ungeschützt {sexDays.filter((d) => d.sex === 'ungeschuetzt').length}
+            {mod.endo && days.some((d) => d.painTypes.gv !== undefined) ? ` · Schmerz beim GV an ${days.filter((d) => d.painTypes.gv !== undefined).length} Tagen` : ''}
+          </p>
+        )}
+
+        {mod.endo && (
+          <>
+            <h2>Selbstfürsorge und Ernährung</h2>
+            <ul className="report-list">
+              <li>Bewegung ≥ 30 min an {care.moveDays} Tagen (Ø {dec(care.movePerWeek)} pro Woche, Empfehlung 3–5){care.movement.length ? ` · ${top(care.movement)}` : ''}</li>
+              <li>Entspannung/Achtsamkeit an {care.relaxDays} Tagen{care.relax.length ? ` · ${top(care.relax)}` : ''}{care.avgStress !== null ? ` · Ø Stress ${dec(care.avgStress)}/10` : ''}</li>
+              <li>Hilfsmittel an {care.aidDays} Tagen{care.aids.length ? ` · ${top(care.aids)}` : ''}</li>
+              <li>Ernährungstagebuch an {care.foodDays} Tagen · Cheat Days {care.cheatDays} · ungünstige Tage {care.unhealthyDays}{care.food.length ? ` · ${top(care.food)}` : ''}</li>
+              {care.supplements.length > 0 && <li>Ergänzungsmittel: {top(care.supplements)}</li>}
+              {care.reactions.length > 0 && <li>Verträglichkeit: {top(care.reactions)}</li>}
+              {[
+                cmpLine('Nach Cheat Day / ungünstiger Ernährung (Tag und Folgetag)', unhealthyDay, 1),
+                cmpLine('Mit ≥ 30 min Bewegung', movedEnough, 0),
+                cmpLine('Mit Entspannungsübung', relaxed, 0),
+                cmpLine('Mit Wärme/Hilfsmittel', usedAids, 0),
+              ]
+                .filter(Boolean)
+                .map((l) => <li key={l!}>{l}</li>)}
+            </ul>
+          </>
+        )}
+
         <h2>Tagesverlauf</h2>
         <table className="days">
           <thead>
             <tr>
               <th>Datum</th><th>ZT</th><th>Blutung</th><th>Schmerz</th><th>Medikation</th><th>Symptome / Notiz</th>
+              {mod.endo && <th>Selbstfürsorge / Ernährung</th>}
+              {mod.sex && <th>GV</th>}
               {nfp && <th>NFP</th>}
               {data.settings.modules.contraception && <th>Verhütung</th>}
             </tr>
@@ -88,13 +136,15 @@ export default function Report({ data, onBack }: { data: AppData; onBack: () => 
                 <td>{d.pain ?? ''}</td>
                 <td>{d.meds.map((m) => `${m.name}${m.doseMg ? ` ${m.doseMg} mg` : ''} ${m.count}×`).join(', ')}</td>
                 <td>{[d.symptoms.join(', '), d.note].filter(Boolean).join(' · ')}</td>
+                {mod.endo && <td>{[careLine(d), foodLine(d)].filter(Boolean).join(' · ')}</td>}
+                {mod.sex && <td>{d.sex === 'ungeschuetzt' ? 'GV' : d.sex === 'geschuetzt' ? 'GV (K)' : ''}</td>}
                 {nfp && <td>{[d.temp?.toFixed(2).replace('.', ','), d.mucus, d.lh].filter(Boolean).join(' ')}</td>}
                 {data.settings.modules.contraception && <td>{courseOn(data.courses, d.date)?.name ?? ''}</td>}
               </tr>
             ))}
           </tbody>
         </table>
-        <p className="foot">Blutung 0–5 (0,5er-Schritte), Sp = Schmierblutung, Schmerz 0–10, ZT = Zyklustag, X/Y = Blutungstage/Zykluslänge.</p>
+        <p className="foot">Blutung 0–5 (0,5er-Schritte), Sp = Schmierblutung, GV (K) = mit Kondom, Schmerz 0–10, ZT = Zyklustag, X/Y = Blutungstage/Zykluslänge.</p>
       </div>
     </div>
   )

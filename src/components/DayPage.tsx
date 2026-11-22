@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { AppData } from '../lib/useData'
 import { courseOn } from '../lib/useData'
 import { addDays, diffDays, monthName, parseISO, todayISO, weekdayShort, type ISODate } from '../lib/dates'
@@ -8,7 +8,9 @@ import { updateDay } from '../lib/db'
 import { bleedingLevel, MED_PROMPT_FROM, painCategory } from '../lib/knowledge'
 import { dayStatus, isOvulationDay, STATUS_LABEL } from '../lib/nfp'
 import type { SheetKind } from '../App'
-import { Icon, SYMPTOM_ICON } from './Icons'
+import { Icon } from './Icons'
+import { IconGrid, Section } from './DaySection'
+import { type CareTab, AidsSection, FoodSection, GynMedSection, MovementSection, RelaxSection, SexSection } from './CareSections'
 import NoteField from './NoteField'
 import { MUCUS } from './NfpSheet'
 
@@ -17,7 +19,8 @@ interface Props {
   date: ISODate
   setDate: (d: ISODate) => void
   onClose: () => void
-  openSheet: (k: SheetKind, d: ISODate) => void
+  openSheet: (k: SheetKind, d: ISODate, id?: number) => void
+  onDiary: (t: CareTab) => void
 }
 
 const fmt = (v: number) => String(v).replace('.', ',')
@@ -26,7 +29,7 @@ const MOODS = SYMPTOM_CATALOG.find((g) => g.group === 'Stimmung')!.items
 const PAIN_WORD = { kein: 'kein Schmerz', leicht: 'leicht', mittel: 'mittel', stark: 'stark' }
 
 /** Tagesansicht: Wochenstreifen oben, darunter alle Eingaben des Tages in klaren Abschnitten. */
-export default function DayPage({ data, date, setDate, onClose, openSheet }: Props) {
+export default function DayPage({ data, date, setDate, onClose, openSheet, onDiary }: Props) {
   const today = todayISO()
   const d = data.days.get(date)
   const m = data.settings.modules
@@ -121,6 +124,8 @@ export default function DayPage({ data, date, setDate, onClose, openSheet }: Pro
           </Section>
         )}
 
+        {m.gynMeds && <GynMedSection data={data} date={date} openSheet={openSheet} />}
+
         {m.symptoms && (
           <Section title="Symptome" action="Alle anzeigen" onAction={() => openSheet('symptoms', date)}>
             <IconGrid items={[...QUICK_SYMPTOMS, ...(d?.symptoms ?? []).filter((s) => !QUICK_SYMPTOMS.includes(s) && !MOODS.includes(s))]} on={d?.symptoms ?? []} onToggle={toggleSym} tone="sym" />
@@ -131,6 +136,15 @@ export default function DayPage({ data, date, setDate, onClose, openSheet }: Pro
           <Section title="Stimmung">
             <IconGrid items={MOODS} on={d?.symptoms ?? []} onToggle={toggleSym} tone="mood" />
           </Section>
+        )}
+
+        {m.endo && (
+          <>
+            <MovementSection data={data} date={date} onDiary={onDiary} />
+            <RelaxSection data={data} date={date} openSheet={openSheet} />
+            <AidsSection data={data} date={date} />
+            <FoodSection data={data} date={date} onDiary={onDiary} />
+          </>
         )}
 
         {m.contraception && <ContraSection data={data} date={date} openSheet={openSheet} />}
@@ -158,6 +172,8 @@ export default function DayPage({ data, date, setDate, onClose, openSheet }: Pro
           </Section>
         )}
 
+        {m.sex && <SexSection data={data} date={date} />}
+
         <Section title="Notiz">
           <NoteField key={date} date={date} initial={d?.note ?? ''} />
         </Section>
@@ -177,37 +193,6 @@ export default function DayPage({ data, date, setDate, onClose, openSheet }: Pro
         </button>
         <div className="dp-end" />
       </div>
-    </div>
-  )
-}
-
-function Section({ title, action, onAction, children }: { title: string; action?: string; onAction?: () => void; children: ReactNode }) {
-  return (
-    <section className="dp-sec">
-      <div className="dp-sec-head">
-        <h2>{title}</h2>
-        {action && onAction && (
-          <button className="link" onClick={onAction}>
-            {action} <Icon name="chevron" size={16} />
-          </button>
-        )}
-      </div>
-      {children}
-    </section>
-  )
-}
-
-function IconGrid({ items, on, onToggle, tone }: { items: string[]; on: string[]; onToggle: (s: string) => void; tone: string }) {
-  return (
-    <div className="icon-grid">
-      {items.map((s) => (
-        <button key={s} className={`ig-item${on.includes(s) ? ' on' : ''}`} onClick={() => onToggle(s)} aria-pressed={on.includes(s)}>
-          <span className={`ig-icon tone-${tone}`}>
-            <Icon name={SYMPTOM_ICON[s] ?? 'sparkle'} />
-          </span>
-          <span className="ig-label">{s}</span>
-        </button>
-      ))}
     </div>
   )
 }

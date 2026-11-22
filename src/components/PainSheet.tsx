@@ -6,12 +6,10 @@ import type { AppData } from '../lib/useData'
 import type { MedIntake } from '../lib/model'
 import {
   BACK_LOCATIONS,
-  EXERCISE_TIP,
   IMPAIRMENTS,
   MED_PROMPT_FROM,
   PAIN_CHARACTERS,
   PAIN_TYPES,
-  SELFCARE,
   painCategory,
   type BackLocation,
   type PainCharacter,
@@ -134,26 +132,7 @@ export default function PainSheet({ data, date, onClose, onSymptoms }: { data: A
               </Chip>
             ))}
           </div>
-          <p className="hint">Stress heute (0 = keiner, 10 = extrem)</p>
-          {d?.stress == null ? (
-            <div className="chips small">
-              <Chip onClick={() => updateDay(date, { stress: 3 })}>Stress eintragen</Chip>
-            </div>
-          ) : (
-            <div className="stress-row">
-              <Scale value={d.stress} onChange={(n) => updateDay(date, { stress: n })} label="Stress 0 bis 10" />
-              <button className="btn ghost small" onClick={() => updateDay(date, { stress: null })}>Entfernen</button>
-            </div>
-          )}
-          <h3>Was hat gutgetan?</h3>
-          <div className="chips small">
-            {SELFCARE.map((x) => (
-              <Chip key={x} on={(d?.selfcare ?? []).includes(x)} onClick={() => updateDay(date, { selfcare: toggle(d?.selfcare ?? [], x) })}>
-                {x}
-              </Chip>
-            ))}
-          </div>
-          <p className="hint tip">{EXERCISE_TIP}</p>
+          <p className="hint">Bewegung, Entspannung, Stress, Hilfsmittel und Ernährung tragen Sie direkt in der Tagesansicht ein.</p>
         </>
       )}
 

@@ -708,3 +708,174 @@ h3 { font-size: 12px; letter-spacing: .08em; }
   .screen { overflow: visible; }
   .app { height: auto; display: block; }
 }
+
+/* ---------- Endometriose: Selbstfürsorge & Ernährung ---------- */
+:root { --move: #2f8a5f; --relax: #7a67d8; --warm: #d9822b; --good: #3d8f4f; --less: #d0613f; --supp: #c4951f; --water: #3a8fd0; }
+:root[data-theme='dark'] { --move: #5cc293; --relax: #a898f2; --warm: #f0a050; --good: #7cc98a; --less: #ef8a6a; --supp: #e8c060; --water: #6db6ee; }
+.tone-move { color: color-mix(in srgb, var(--move) 75%, var(--muted)); }
+.tone-relax { color: color-mix(in srgb, var(--relax) 75%, var(--muted)); }
+.tone-warm { color: color-mix(in srgb, var(--warm) 75%, var(--muted)); }
+.tone-good { color: color-mix(in srgb, var(--good) 75%, var(--muted)); }
+.tone-less { color: color-mix(in srgb, var(--less) 75%, var(--muted)); }
+.tone-supp { color: color-mix(in srgb, var(--supp) 75%, var(--muted)); }
+.tone-water { color: var(--water); }
+.ig-item.on .tone-move { --t: var(--move); }
+.ig-item.on .tone-relax { --t: var(--relax); }
+.ig-item.on .tone-warm { --t: var(--warm); }
+.ig-item.on .tone-good { --t: var(--good); }
+.ig-item.on .tone-less { --t: var(--less); }
+.ig-item.on .tone-supp { --t: var(--supp); }
+.ig-item.on :is(.tone-move, .tone-relax, .tone-warm, .tone-good, .tone-less, .tone-supp) {
+  background: color-mix(in srgb, var(--t) 28%, var(--surface-2)); color: var(--t); box-shadow: inset 0 0 0 2px var(--t);
+}
+.dp-sub { margin: 18px 0 10px; }
+.dp-sec .dp-sub:first-of-type { margin-top: 14px; }
+.hint.first { margin-top: 0; }
+.ok-text { color: var(--fert-no); }
+.warn-text { color: var(--pain); font-weight: 600; }
+
+/* Minuten Bewegung */
+.mins { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; }
+.min-btn {
+  height: 50px; border: 0; border-radius: 14px; background: var(--surface-2); color: var(--ink); font-weight: 700; font-size: 16px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.05; padding: 0;
+}
+.min-btn small { font-size: 10px; font-weight: 600; color: var(--muted); }
+.min-btn:first-child { font-size: 13px; }
+.min-btn.goal { background: color-mix(in srgb, var(--move) 12%, var(--surface-2)); }
+.min-btn.on { background: var(--move); color: #fff; transform: scale(1.06); box-shadow: 0 4px 12px color-mix(in srgb, var(--move) 40%, transparent); }
+.min-btn.on:not(.goal) { background: color-mix(in srgb, var(--move) 55%, var(--surface-2)); }
+.min-btn.on small { color: inherit; opacity: .85; }
+.week-goal { display: flex; align-items: center; gap: 12px; background: var(--surface-2); border-radius: 16px; padding: 10px 12px; margin: 4px 0 16px; }
+.wg-days { display: flex; gap: 4px; flex: 1; justify-content: space-between; }
+.wg-day { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+.wg-day i { width: 24px; height: 24px; border-radius: 50%; background: var(--surface); border: 2px solid var(--line-strong); display: grid; place-items: center; font-style: normal; font-size: 13px; font-weight: 800; color: #fff; }
+.wg-day.some i { border-color: var(--move); }
+.wg-day.ok i { background: var(--move); border-color: var(--move); }
+.wg-day.sel small { color: var(--ink); font-weight: 800; }
+.wg-day.future i { opacity: .5; }
+.wg-day small { font-size: 10px; color: var(--muted); font-weight: 600; }
+.wg-text { display: flex; flex-direction: column; text-align: right; font-size: 13px; white-space: nowrap; }
+.wg-text b { font-size: 20px; color: var(--move); }
+.wg-text small { color: var(--muted); font-size: 11px; }
+
+/* Stress und Entspannung */
+.nrs.stress .nrs-btn { background: color-mix(in srgb, var(--relax) calc(var(--p) * 5%), var(--surface-2)); height: 40px; font-size: 15px; }
+.nrs.stress .nrs-btn.on { background: var(--relax); color: #fff; box-shadow: 0 4px 12px color-mix(in srgb, var(--relax) 40%, transparent); }
+.breath-cta {
+  display: flex; align-items: center; gap: 12px; width: 100%; border: 0; text-align: left; color: var(--ink); margin: 12px 0 4px;
+  padding: 12px 14px; border-radius: 18px; background: linear-gradient(120deg, color-mix(in srgb, var(--relax) 30%, var(--surface)), var(--surface) 80%); box-shadow: var(--shadow);
+}
+.breath-cta > span:nth-child(2) { flex: 1; display: flex; flex-direction: column; }
+.breath-cta small { color: var(--muted); font-size: 13px; }
+.bc-icon { width: 44px; height: 44px; border-radius: 14px; background: var(--relax); color: #fff; display: grid; place-items: center; flex: none; }
+
+/* Ernährung */
+.cheat {
+  display: flex; align-items: center; gap: 12px; width: 100%; border: 2px dashed color-mix(in srgb, var(--less) 45%, transparent); background: none;
+  border-radius: 18px; padding: 10px 12px; text-align: left; color: var(--ink);
+}
+.cheat-icon { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; background: var(--surface-2); color: var(--less); flex: none; }
+.cheat-main { flex: 1; display: flex; flex-direction: column; }
+.cheat-main small { color: var(--muted); font-size: 12.5px; }
+.cheat-check { width: 26px; height: 26px; border-radius: 50%; border: 2px solid var(--line-strong); display: grid; place-items: center; font-weight: 800; color: #fff; flex: none; }
+.cheat.on { border-style: solid; border-color: var(--less); background: color-mix(in srgb, var(--less) 12%, transparent); }
+.cheat.on .cheat-icon { background: var(--less); color: #fff; }
+.cheat.on .cheat-check { background: var(--less); border-color: var(--less); }
+.water { display: flex; align-items: center; gap: 12px; padding: 14px 0 4px; margin-top: 12px; border-top: 1px solid var(--line); }
+.water .stepper button:disabled { opacity: .35; }
+.meals { display: flex; flex-direction: column; gap: 8px; }
+.meal { display: grid; grid-template-columns: 104px 1fr; align-items: center; gap: 8px; font-size: 14px; }
+.meal span { color: var(--muted); font-weight: 600; }
+.meal input { width: 100%; min-height: 42px; padding: 8px 12px; font-size: 15px; color: var(--ink); }
+
+/* Geschlechtsverkehr */
+.sex-opts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.sex-opt {
+  display: flex; flex-direction: column; align-items: center; gap: 4px; border: 0; border-radius: 16px; padding: 12px 4px;
+  background: var(--surface-2); color: var(--ink); font-size: 13px; font-weight: 600;
+}
+.sex-opt svg { color: var(--muted); }
+.sex-opt.on { background: var(--accent); color: var(--on-accent); }
+.sex-opt.on svg { color: inherit; }
+.dot-sex { background: var(--accent); }
+
+/* Atemübung */
+.seg.wide.two { grid-template-columns: 1fr 1fr; }
+.chips.center { justify-content: center; }
+.breath { display: flex; flex-direction: column; align-items: center; gap: 12px; padding-top: 8px; }
+.breath .btn-pill { width: 100%; }
+.breath-circle {
+  width: 200px; height: 200px; border-radius: 50%; display: grid; place-items: center; margin: 12px 0;
+  background: radial-gradient(circle, color-mix(in srgb, var(--relax) 45%, var(--surface)) 0 55%, color-mix(in srgb, var(--relax) 18%, var(--surface)) 56%);
+  transform: scale(.72); transition: transform 1s ease;
+}
+.breath-circle.in { transform: scale(1); transition-duration: var(--in); }
+.breath-circle.out { transform: scale(.72); transition-duration: var(--out); }
+.breath-circle span { display: flex; flex-direction: column; align-items: center; text-align: center; }
+.breath-circle b { font-size: 22px; }
+.breath-circle small { color: var(--muted); font-size: 13px; max-width: 130px; }
+.senses-list { list-style: none; padding: 0; margin: 8px 0 16px; display: flex; flex-direction: column; gap: 8px; }
+.senses-list li { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 14px; background: var(--surface-2); opacity: .6; }
+.senses-list li b { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; background: var(--surface); color: var(--relax); font-size: 17px; flex: none; }
+.senses-list li.cur { opacity: 1; box-shadow: inset 0 0 0 2px var(--relax); }
+.senses-list li.done { opacity: 1; }
+.senses-list li.done b { background: var(--relax); color: #fff; }
+
+/* Formularfeld im Sheet */
+.field { display: flex; flex-direction: column; gap: 4px; margin-bottom: 10px; font-size: 13px; color: var(--muted); }
+.field input { min-height: 44px; padding: 8px 12px; font-size: 16px; color: var(--ink); }
+
+/* Endometriose-Tagebuch */
+.care-tabs { display: grid; grid-template-columns: repeat(4, 1fr); margin-bottom: 14px; }
+.care-tabs button { padding: 9px 2px; font-size: 13px; }
+.cal-title.small { font-size: 19px; }
+.cv-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+.cv-day {
+  position: relative; aspect-ratio: 1 / 1.05; border: 0; border-radius: 14px; background: var(--surface-2); color: var(--ink); padding: 4px 0 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: space-between; min-width: 0;
+}
+.cv-day.out { opacity: .35; }
+.cv-day.today { box-shadow: inset 0 0 0 2px var(--accent); }
+.cv-num { font-size: 15px; font-weight: 600; }
+.cv-meta { display: flex; align-items: center; gap: 3px; height: 18px; margin-bottom: 4px; }
+.cv-blood { display: block; width: 6px; height: 6px; border-radius: 50%; background: var(--blood); }
+.cv-pain {
+  font-size: 10.5px; font-weight: 800; min-width: 18px; height: 16px; border-radius: 99px; display: inline-grid; place-items: center; padding: 0 4px;
+  background: color-mix(in srgb, var(--pain) calc(25% + var(--p) * 7.5%), var(--surface)); color: var(--ink);
+}
+.cv-flag { position: absolute; top: 2px; right: 3px; color: var(--less); }
+.cv-day.m-good { background: color-mix(in srgb, var(--good) 38%, var(--surface-2)); }
+.cv-day.m-some { background: color-mix(in srgb, var(--good) 14%, var(--surface-2)); }
+.cv-day.m-less { background: color-mix(in srgb, var(--less) 34%, var(--surface-2)); }
+.cv-day.m-relax { background: color-mix(in srgb, var(--relax) 36%, var(--surface-2)); }
+.cv-day.m-warm { background: color-mix(in srgb, var(--warm) 36%, var(--surface-2)); }
+.care .cv-day.m-good:not(.m-less) { color: var(--ink); }
+.lg.m-good { background: color-mix(in srgb, var(--good) 50%, var(--surface-2)); }
+.lg.m-some { background: color-mix(in srgb, var(--good) 18%, var(--surface-2)); }
+.lg.m-less { background: color-mix(in srgb, var(--less) 50%, var(--surface-2)); }
+.lg.m-relax { background: color-mix(in srgb, var(--relax) 50%, var(--surface-2)); }
+.lg.m-warm { background: color-mix(in srgb, var(--warm) 50%, var(--surface-2)); }
+.lg-pain { min-width: 16px; }
+.cmp { display: flex; flex-direction: column; gap: 10px; margin: 6px 0 8px; }
+.cmp-row, .top-row { display: grid; grid-template-columns: minmax(0, 1.3fr) 1fr 38px; align-items: center; gap: 10px; font-size: 14px; }
+.cmp-row b, .top-row b { text-align: right; font-size: 16px; }
+.cmp-label { display: flex; flex-direction: column; line-height: 1.25; }
+.cmp-label small { color: var(--muted); font-size: 11.5px; }
+.cmp-bar { height: 10px; border-radius: 99px; background: var(--surface-2); overflow: hidden; }
+.cmp-bar i { display: block; height: 100%; border-radius: 99px; background: var(--muted); }
+.cmp-bar i.with { background: var(--pain); }
+.top { display: flex; flex-direction: column; gap: 8px; margin-bottom: 6px; }
+.top-row .cmp-bar i { background: var(--accent); }
+.diary { display: flex; align-items: flex-start; gap: 12px; width: 100%; border: 0; border-top: 1px solid var(--line); background: none; padding: 12px 0; text-align: left; color: var(--ink); }
+.diary-date { display: flex; flex-direction: column; align-items: center; width: 34px; flex: none; }
+.diary-date b { font-size: 19px; }
+.diary-date small { color: var(--muted); font-size: 11px; text-transform: uppercase; }
+.diary-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; font-size: 13.5px; }
+.diary-tags { display: flex; flex-wrap: wrap; gap: 4px; }
+.tag { font-style: normal; font-size: 12px; padding: 3px 8px; border-radius: 99px; background: var(--surface-2); }
+.tag.less { background: var(--less); color: #fff; font-weight: 700; }
+.tag.supp { background: color-mix(in srgb, var(--supp) 25%, var(--surface-2)); }
+.tag.pain { background: color-mix(in srgb, var(--pain) calc(25% + var(--p) * 7.5%), var(--surface)); font-weight: 700; }
+.report-list { margin: 4px 0 8px; padding-left: 18px; }
+.report-list li { margin: 2px 0; }
