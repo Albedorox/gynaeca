@@ -951,3 +951,12 @@ h3 { font-size: 12px; letter-spacing: .08em; }
 .lg.k-pred { box-shadow: none; border: 1.2px dashed color-mix(in srgb, var(--blood) 75%, transparent); }
 .cal-day.today .cd-num { box-shadow: 0 0 0 3px var(--bg), 0 0 0 4px var(--accent); }
 .cal-wd { border-bottom: 1px solid var(--hair); margin-bottom: 6px; }
+
+/* Kalender wischen: drei Monate nebeneinander, der mittlere ist sichtbar */
+.cal { touch-action: auto; }
+.cal-viewport { overflow: hidden; touch-action: pan-y; transition: height .25s ease; margin: 0 -10px; }
+.cal-track { display: flex; width: 300%; will-change: transform; align-items: flex-start; }
+.cal-track.anim { transition: transform .28s cubic-bezier(.2, .8, .2, 1); }
+.cal-track > .cal-grid { width: calc(100% / 3); flex: none; padding: 0 10px; }
+/* Navigation liegt über dem Inhalt (auch über hervorgehobenen Kalendertagen) */
+.tabbar { z-index: 20; }

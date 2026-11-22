@@ -98,7 +98,6 @@ function CycleRing({ data, today, prediction, onOpenDay, onFertility }: { data: 
       key: 'start',
       node: (
         <>
-          <Lineart className="ring-art" />
           <b className="ring-title">Willkommen</b>
           <span className="ring-sub">Wann begann Ihre letzte Periode?</span>
           <button className="btn primary btn-pill" onClick={() => onOpenDay(today)}>Periode eintragen</button>
@@ -214,13 +213,7 @@ type Kind = 'period' | 'spot' | 'pred' | 'fert' | 'none'
 
 function Calendar({ data, ym, setYm, today, prediction, onOpenDay }: { data: AppData; ym: { y: number; m0: number }; setYm: Props['setYm']; today: ISODate; prediction: Prediction | null; onOpenDay: (d: ISODate) => void }) {
   const { y, m0 } = ym
-  const n = daysInMonth(y, m0)
-  const first = toISO(y, m0, 1)
-  const lead = (new Date(Date.UTC(y, m0, 1)).getUTCDay() + 6) % 7 // Montag = 0
-  const start = addDays(first, -lead)
-  const weeks = Math.ceil((lead + n) / 7)
   const nfpOn = data.settings.modules.nfp
-  const swipe = useRef<{ x: number; y: number } | null>(null)
 
   // Vorhergesagte Perioden (nächste und zwei weitere)
   const pred = new Set<ISODate>()
@@ -242,21 +235,50 @@ function Calendar({ data, ym, setYm, today, prediction, onOpenDay }: { data: App
     return 'none'
   }
 
-  const go = (d: number) => setYm(shiftMonth(y, m0, d))
+  // Wischen: der Monat folgt dem Finger, beim Loslassen gleitet er weiter oder zurück
+  const viewport = useRef<HTMLDivElement>(null)
+  const drag = useRef<{ x: number; y: number; t: number; dir: 'h' | 'v' | null; moved: boolean } | null>(null)
+  const [dx, setDx] = useState(0)
+  const [anim, setAnim] = useState(false)
+  const pending = useRef<number | null>(null)
+  const fallback = useRef<number | undefined>(undefined)
+
+  const commit = () => {
+    window.clearTimeout(fallback.current)
+    const d = pending.current
+    pending.current = null
+    if (d) setYm(shiftMonth(y, m0, d))
+    setAnim(false)
+    setDx(0)
+  }
+  const slideTo = (d: -1 | 0 | 1) => {
+    const w = viewport.current?.clientWidth ?? 360
+    pending.current = d
+    setAnim(true)
+    setDx(-d * w)
+    window.clearTimeout(fallback.current)
+    fallback.current = window.setTimeout(commit, 400)
+  }
+  const go = (d: number) => {
+    if (pending.current !== null) return
+    slideTo(d < 0 ? -1 : 1)
+  }
+
   const isThisMonth = parseISO(today).y === y && parseISO(today).m0 === m0
+  const weeksOf = (yy: number, mm: number) => {
+    const lead = (new Date(Date.UTC(yy, mm, 1)).getUTCDay() + 6) % 7
+    return Math.ceil((lead + daysInMonth(yy, mm)) / 7)
+  }
+  const prev = shiftMonth(y, m0, -1)
+  const next = shiftMonth(y, m0, 1)
+  // Höhe folgt dem Monat, der gerade am meisten zu sehen ist
+  const w = viewport.current?.clientWidth ?? 360
+  const showing = dx < -w / 2 ? next : dx > w / 2 ? prev : ym
+  const weeks = weeksOf(showing.y, showing.m0)
+  const height = weeks * 48 + (weeks - 1) * 6
 
   return (
-    <section
-      className="cal"
-      onPointerDown={(e) => (swipe.current = { x: e.clientX, y: e.clientY })}
-      onPointerUp={(e) => {
-        const s = swipe.current
-        swipe.current = null
-        if (!s) return
-        const dx = e.clientX - s.x
-        if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(e.clientY - s.y) * 1.5) go(dx < 0 ? 1 : -1)
-      }}
-    >
+    <section className="cal">
       <div className="cal-head">
         <button className="icon-btn" onClick={() => go(-1)} aria-label="Vorheriger Monat"><Icon name="back" /></button>
         <button
@@ -275,56 +297,70 @@ function Calendar({ data, ym, setYm, today, prediction, onOpenDay }: { data: App
         <button className="cal-today-link" onClick={() => setYm({ y: parseISO(today).y, m0: parseISO(today).m0 })}>Zurück zu heute</button>
       )}
       <div className="cal-wd" aria-hidden="true">
-        {['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'].map((w) => <span key={w}>{w}</span>)}
+        {['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'].map((wd) => <span key={wd}>{wd}</span>)}
       </div>
-      <div className="cal-grid" role="grid" aria-label={`${monthName(m0)} ${y}`}>
-        {Array.from({ length: weeks }, (_, w) => {
-          const row = Array.from({ length: 7 }, (_, i) => addDays(start, w * 7 + i))
-          const kinds = row.map(kindOf)
-          return (
-            <div key={w} className="cal-row" role="row">
-              {row.map((iso, i) => {
-                const k = kinds[i]
-                const e = data.days.get(iso)
-                const out = iso.slice(0, 7) !== first.slice(0, 7)
-                const ovu = nfpOn && isOvulationDay(data.nfp, iso)
-                const l = i === 0 || kinds[i - 1] !== k
-                const r = i === 6 || kinds[i + 1] !== k
-                const mc = medCount(e)
-                const label = [
-                  `${Number(iso.slice(8))}. ${monthName(parseISO(iso).m0)}`,
-                  iso === today ? 'heute' : '',
-                  k === 'period' ? (e && e.bleeding > 0 ? `Blutung ${bleedingLevel(e.bleeding).label}` : 'Periode') : '',
-                  k === 'spot' ? 'Schmierblutung' : '',
-                  k === 'pred' ? 'Periode erwartet' : '',
-                  k === 'fert' ? 'fruchtbar' : '',
-                  ovu ? 'Eisprung' : '',
-                  e?.pain ? `Schmerz ${e.pain}` : '',
-                  mc ? `${mc} Medikamente` : '',
-                ]
-                  .filter(Boolean)
-                  .join(', ')
-                return (
-                  <button
-                    key={iso}
-                    role="gridcell"
-                    className={`cal-day k-${k}${l ? ' bl' : ''}${r ? ' br' : ''}${out ? ' out' : ''}${iso === today ? ' today' : ''}${ovu ? ' ovu' : ''}${iso > today ? ' future' : ''}`}
-                    onClick={() => onOpenDay(iso)}
-                    aria-label={label}
-                  >
-                    <span className="cd-num">{Number(iso.slice(8))}</span>
-                    <span className="cd-dots" aria-hidden="true">
-                      {(e?.pain ?? 0) > 0 && <i className="dot-pain" />}
-                      {mc > 0 && <i className="dot-med" />}
-                      {(e?.symptoms.length ?? 0) > 0 && <i className="dot-sym" />}
-                      {data.settings.modules.sex && (e?.sex === 'geschuetzt' || e?.sex === 'ungeschuetzt') && <i className="dot-sex" />}
-                    </span>
-                  </button>
-                )
-              })}
-            </div>
-          )
-        })}
+      <div
+        className="cal-viewport"
+        ref={viewport}
+        style={{ height }}
+        onPointerDown={(e) => {
+          if (pending.current !== null) return
+          drag.current = { x: e.clientX, y: e.clientY, t: Date.now(), dir: null, moved: false }
+        }}
+        onPointerMove={(e) => {
+          const s = drag.current
+          if (!s) return
+          const ddx = e.clientX - s.x
+          const ddy = e.clientY - s.y
+          if (s.dir === null && (Math.abs(ddx) > 8 || Math.abs(ddy) > 8)) {
+            s.dir = Math.abs(ddx) > Math.abs(ddy) ? 'h' : 'v'
+            if (s.dir === 'h') {
+              try {
+                e.currentTarget.setPointerCapture(e.pointerId)
+              } catch {
+                /* egal */
+              }
+            }
+          }
+          if (s.dir === 'h') {
+            s.moved = true
+            setAnim(false)
+            setDx(ddx)
+          }
+        }}
+        onPointerUp={(e) => {
+          const s = drag.current
+          drag.current = null
+          if (!s || s.dir !== 'h') return
+          const ddx = e.clientX - s.x
+          const width = e.currentTarget.clientWidth
+          const v = ddx / Math.max(1, Date.now() - s.t)
+          if (Math.abs(ddx) > width * 0.22 || Math.abs(v) > 0.45) slideTo(ddx < 0 ? 1 : -1)
+          else slideTo(0)
+        }}
+        onPointerCancel={() => {
+          if (drag.current?.dir === 'h') slideTo(0)
+          drag.current = null
+        }}
+        onClickCapture={(e) => {
+          // Nach dem Wischen keinen Tag öffnen
+          if (dx !== 0 || pending.current !== null) {
+            e.stopPropagation()
+            e.preventDefault()
+          }
+        }}
+      >
+        <div
+          className={`cal-track${anim ? ' anim' : ''}`}
+          style={{ transform: `translateX(calc(-100% / 3 + ${dx}px))` }}
+          onTransitionEnd={(e) => {
+            if (e.target === e.currentTarget && pending.current !== null) commit()
+          }}
+        >
+          {[prev, ym, next].map((m, i) => (
+            <MonthGrid key={`${m.y}-${m.m0}`} data={data} ym={m} today={today} kindOf={kindOf} onOpenDay={onOpenDay} hidden={i !== 1} />
+          ))}
+        </div>
       </div>
       <div className="legend" aria-label="Legende">
         <span><i className="lg k-period" />Periode</span>
@@ -338,6 +374,67 @@ function Calendar({ data, ym, setYm, today, prediction, onOpenDay }: { data: App
       </div>
       {prediction && <p className="hint center small">Die Erwartung ist ein Durchschnitt Ihrer letzten Zyklen und kein Verhütungsschutz.</p>}
     </section>
+  )
+}
+
+function MonthGrid({ data, ym, today, kindOf, onOpenDay, hidden }: { data: AppData; ym: { y: number; m0: number }; today: ISODate; kindOf: (iso: ISODate) => Kind; onOpenDay: (d: ISODate) => void; hidden: boolean }) {
+  const { y, m0 } = ym
+  const n = daysInMonth(y, m0)
+  const first = toISO(y, m0, 1)
+  const lead = (new Date(Date.UTC(y, m0, 1)).getUTCDay() + 6) % 7 // Montag = 0
+  const start = addDays(first, -lead)
+  const weeks = Math.ceil((lead + n) / 7)
+  const nfpOn = data.settings.modules.nfp
+  return (
+    <div className="cal-grid" role="grid" aria-label={`${monthName(m0)} ${y}`} aria-hidden={hidden || undefined} inert={hidden || undefined}>
+      {Array.from({ length: weeks }, (_, w) => {
+        const row = Array.from({ length: 7 }, (_, i) => addDays(start, w * 7 + i))
+        const kinds = row.map(kindOf)
+        return (
+          <div key={w} className="cal-row" role="row">
+            {row.map((iso, i) => {
+              const k = kinds[i]
+              const e = data.days.get(iso)
+              const out = iso.slice(0, 7) !== first.slice(0, 7)
+              const ovu = nfpOn && isOvulationDay(data.nfp, iso)
+              const l = i === 0 || kinds[i - 1] !== k
+              const r = i === 6 || kinds[i + 1] !== k
+              const mc = medCount(e)
+              const label = [
+                `${Number(iso.slice(8))}. ${monthName(parseISO(iso).m0)}`,
+                iso === today ? 'heute' : '',
+                k === 'period' ? (e && e.bleeding > 0 ? `Blutung ${bleedingLevel(e.bleeding).label}` : 'Periode') : '',
+                k === 'spot' ? 'Schmierblutung' : '',
+                k === 'pred' ? 'Periode erwartet' : '',
+                k === 'fert' ? 'fruchtbar' : '',
+                ovu ? 'Eisprung' : '',
+                e?.pain ? `Schmerz ${e.pain}` : '',
+                mc ? `${mc} Medikamente` : '',
+              ]
+                .filter(Boolean)
+                .join(', ')
+              return (
+                <button
+                  key={iso}
+                  role="gridcell"
+                  className={`cal-day k-${k}${l ? ' bl' : ''}${r ? ' br' : ''}${out ? ' out' : ''}${iso === today ? ' today' : ''}${ovu ? ' ovu' : ''}${iso > today ? ' future' : ''}`}
+                  onClick={() => onOpenDay(iso)}
+                  aria-label={label}
+                >
+                  <span className="cd-num">{Number(iso.slice(8))}</span>
+                  <span className="cd-dots" aria-hidden="true">
+                    {(e?.pain ?? 0) > 0 && <i className="dot-pain" />}
+                    {mc > 0 && <i className="dot-med" />}
+                    {(e?.symptoms.length ?? 0) > 0 && <i className="dot-sym" />}
+                    {data.settings.modules.sex && (e?.sex === 'geschuetzt' || e?.sex === 'ungeschuetzt') && <i className="dot-sex" />}
+                  </span>
+                </button>
+              )
+            })}
+          </div>
+        )
+      })}
+    </div>
   )
 }
 
