@@ -13,6 +13,8 @@
   --today: #fff1d6;
   --weekend: #f6f0ee;
   --chip: #f3eceb;
+  --fert-no: #2f7d5c;
+  --fert-yes: #b3364a;
   --row-h: calc((100dvh - 118px - env(safe-area-inset-top) - env(safe-area-inset-bottom)) / var(--rows, 31));
   color-scheme: light;
 }
@@ -32,6 +34,8 @@
     --today: #3a2f1c;
     --weekend: #211a1d;
     --chip: #30272a;
+    --fert-no: #5cc293;
+    --fert-yes: #e0607a;
     color-scheme: dark;
   }
 }
@@ -261,6 +265,9 @@ input:not([type]), input[type=text], textarea, select {
 .report .foot { font-size: 11px; color: var(--muted); }
 @media print {
   :root { --paper: #fff; --ink: #000; --line-strong: #999; --chip: #eee; }
+  .fertility .page-head, .fertility .chips, .fertility .fert-today .btn { display: none !important; }
+  .fertility .page-body { overflow: visible; }
+  .chart-scroll { overflow: visible !important; }
   body, .app, .page { height: auto; background: #fff; }
   .no-print { display: none !important; }
   .report { padding: 0; }
@@ -323,7 +330,12 @@ input:not([type]), input[type=text], textarea, select {
 .pain-tag { font-weight: 700; color: color-mix(in srgb, var(--pain) calc(40% + var(--p) * 6%), var(--ink)); }
 .med-tag { color: var(--pill); font-weight: 600; }
 .spot-tag { color: var(--spot); }
-.dv-zt { position: absolute; right: 12px; top: 6px; font-size: 10px; color: var(--muted); }
+.dv-side { position: absolute; right: 12px; top: 6px; display: flex; gap: 6px; align-items: center; }
+.dv-zt { font-size: 10px; color: var(--muted); }
+.dv-level { display: flex; flex-direction: column; width: 100%; line-height: 1.2; }
+.dv-level b { font-size: 14px; color: var(--blood); }
+.dv-level small { font-size: 12px; color: var(--muted); }
+.temp-tag { font-variant-numeric: tabular-nums; }
 
 /* ---------- Menü ---------- */
 .menu-backdrop { position: fixed; inset: 0; background: rgb(0 0 0 / .32); z-index: 60; animation: fade .12s; }
@@ -340,3 +352,87 @@ input:not([type]), input[type=text], textarea, select {
 .menu-item small { font-size: 12px; color: var(--muted); }
 .menu-item.on { background: var(--chip); font-weight: 600; }
 .menu-item:active { background: var(--chip); }
+
+/* ---------- Module, Einstellungen ---------- */
+.sub-toggles { margin: 0 0 6px 14px; padding-left: 12px; border-left: 2px solid var(--line); }
+.num-input { width: 110px; text-align: right; }
+h3.first { margin-top: 10px; }
+.pain-cat { color: var(--ink); }
+.callout { display: flex; flex-direction: column; gap: 2px; background: color-mix(in srgb, var(--pill) 10%, var(--paper)); border: 1px solid color-mix(in srgb, var(--pill) 35%, transparent); border-radius: 12px; padding: 10px 12px; margin: 8px 0; font-size: 14px; }
+.callout span { color: var(--muted); font-size: 13px; }
+.scale-row { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 160px; }
+.scale-row input[type=range] { flex: 1; accent-color: color-mix(in srgb, var(--pain) calc(40% + var(--p) * 6%), var(--accent)); min-height: 32px; }
+.scale-val { min-width: 1.6em; text-align: right; font-variant-numeric: tabular-nums; }
+.ptype { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; padding: 4px 0; }
+.ptype small { font-size: 12px; }
+.stress-row { display: flex; align-items: center; gap: 8px; }
+.hint.tip { background: var(--chip); padding: 8px 10px; border-radius: 10px; color: var(--ink); }
+.link { border: 0; background: none; color: var(--accent); padding: 6px 0; font-weight: 600; text-align: left; }
+.howto { background: var(--chip); border-radius: 12px; padding: 4px 12px; font-size: 14px; margin: 4px 0 8px; }
+.howto ol { padding-left: 18px; }
+.mucus-list { display: flex; flex-direction: column; gap: 6px; margin: 6px 0; }
+.mucus-opt { display: flex; gap: 10px; align-items: center; text-align: left; border: 1px solid var(--line-strong); background: var(--paper); border-radius: 12px; padding: 8px 12px; }
+.mucus-opt b { min-width: 2em; font-size: 17px; color: var(--accent); }
+.mucus-opt small { display: block; color: var(--muted); font-size: 12px; }
+.mucus-opt.on { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 10%, var(--paper)); }
+.lh-example { display: flex; gap: 14px; justify-content: center; margin: 8px 0; }
+.lh-strip { margin: 0; text-align: center; font-size: 12px; color: var(--muted); }
+.scale-table { width: 100%; border-collapse: collapse; }
+.scale-table th { width: 2.4em; text-align: center; color: var(--blood); font-size: 17px; vertical-align: top; padding: 6px 0; }
+.scale-table td { padding: 6px 0; border-bottom: 1px solid var(--line); }
+.scale-table small { display: block; color: var(--muted); font-size: 13px; }
+
+/* ---------- Hinweise ---------- */
+.alert { display: flex; align-items: flex-start; gap: 4px; margin: 0 12px 4px; border-radius: 12px; border: 1px solid var(--line-strong); background: var(--paper); }
+.alert-arzt { border-color: color-mix(in srgb, var(--accent) 50%, transparent); background: color-mix(in srgb, var(--accent) 7%, var(--paper)); }
+.alert-main { flex: 1; text-align: left; border: 0; background: none; padding: 8px 12px; font-size: 14px; }
+.alert-main small { color: var(--muted); }
+.alert-text { display: block; margin-top: 4px; color: var(--ink); font-size: 13px; }
+.alert > .btn { margin: 8px 8px 8px 0; flex: none; }
+.alert-x { border: 0; background: none; color: var(--muted); padding: 8px 12px; }
+
+/* ---------- Fruchtbarkeit ---------- */
+.fert { font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 99px; border: 1px solid currentColor; white-space: nowrap; }
+.fert-unfruchtbar, .fert-ab-abend { color: var(--fert-no); }
+.fert-fruchtbar { color: var(--fert-yes); }
+.fert-offen, .fert-none { color: var(--muted); }
+.fert.ovu { background: var(--fert-yes); border-color: var(--fert-yes); color: #fff; }
+.fert-today { display: flex; flex-direction: column; gap: 2px; align-items: flex-start; border: 2px solid currentColor; border-radius: 16px; padding: 12px 14px; margin-bottom: 10px; background: var(--paper); }
+.fert-today small { color: var(--muted); }
+.fert-today b { font-size: 24px; }
+.fert-today span { color: var(--ink); font-size: 14px; margin-bottom: 6px; }
+.week-strip { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-bottom: 12px; }
+.ws-day { display: flex; flex-direction: column; align-items: center; background: var(--paper); border: 1px solid var(--line); border-radius: 10px; padding: 6px 2px; border-bottom: 4px solid currentColor; }
+.ws-day small { color: var(--muted); font-size: 11px; }
+.ws-day b { color: var(--ink); }
+.ws-day i { font-style: normal; font-size: 9px; text-align: center; line-height: 1.1; }
+.ws-day.today { box-shadow: 0 0 0 2px var(--accent); }
+.cycle-nav { display: flex; align-items: center; gap: 4px; }
+.cycle-nav h2 { flex: 1; text-align: center; }
+.summary { margin: 4px 0 8px; }
+.summary div { display: grid; grid-template-columns: 9.5em 1fr; gap: 8px; padding: 6px 0; border-bottom: 1px solid var(--line); font-size: 14px; }
+.summary dt { color: var(--muted); }
+.summary dd { margin: 0; }
+.chart-wrap { margin-top: 8px; }
+.chart-scroll { overflow-x: auto; }
+.chart-scroll svg { display: block; }
+.chart-scroll .grid { stroke: var(--line); stroke-width: 1; }
+.chart-scroll .axis { fill: var(--muted); font-size: 10px; }
+.chart-scroll .tline { fill: none; stroke: var(--ink); stroke-width: 2; stroke-linejoin: round; }
+.chart-scroll .tdot { fill: var(--ink); stroke: var(--paper); stroke-width: 2; }
+.chart-scroll .tdot.off { fill: var(--paper); stroke: var(--muted); stroke-width: 1.5; }
+.chart-scroll .coverline { stroke: var(--accent); stroke-width: 1.5; stroke-dasharray: 5 4; }
+.chart-scroll .num { fill: var(--accent); font-size: 10px; font-weight: 700; }
+.chart-scroll .mrow { fill: var(--ink); font-size: 10px; }
+.chart-scroll .mrow.peak { fill: var(--accent); font-weight: 800; }
+.chart-scroll .bleed-mark { fill: var(--blood); }
+.chart-scroll .band.fert-fruchtbar { fill: var(--fert-yes); }
+.chart-scroll .band.fert-unfruchtbar, .chart-scroll .band.fert-ab-abend { fill: var(--fert-no); }
+.chart-scroll .band.fert-offen, .chart-scroll .band.fert-none { fill: var(--line-strong); }
+.chart-scroll .cross { stroke: var(--muted); stroke-width: 1; }
+.chart-legend { display: flex; flex-wrap: wrap; gap: 12px; font-size: 12px; color: var(--muted); margin: 6px 0; }
+.chart-legend span { display: inline-flex; align-items: center; gap: 5px; }
+.lg-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--ink); }
+.lg-dash { width: 16px; border-top: 2px dashed var(--accent); }
+.lg-band { width: 14px; height: 8px; border-radius: 2px; background: currentColor; }
+.hint.disclaimer { margin: 16px 4px 24px; }

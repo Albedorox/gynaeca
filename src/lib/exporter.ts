@@ -2,6 +2,7 @@ import { db, getSettings } from './db'
 import { todayISO } from './dates'
 import type { ContraceptionCourse, DayEntry, Settings } from './model'
 import { emptyDay } from './model'
+import { BACK_LOCATIONS, PAIN_TYPES } from './knowledge'
 
 export interface BackupFile {
   app: 'die-frau-zyklusblatt'
@@ -53,6 +54,7 @@ export async function exportCSV(): Promise<void> {
     'Datum', 'Blutung (0-5)', 'Schmierblutung', 'Schmerz (0-10)', 'Medikamente', 'Einnahmen gesamt',
     'Symptome', 'Notiz', 'Basaltemperatur', 'Temp. gestört', 'Zervixschleim',
     'Muttermund Öffnung', 'Muttermund Festigkeit', 'Muttermund Stellung', 'LH-Test', 'Verhütung',
+    'Schmerzarten (0-10)', 'Rücken', 'Schmerzcharakter', 'Alltag', 'Stress (0-10)', 'Bewegung/Entspannung', 'Schleim beobachtet',
   ]
   const rows = days.map((d) => {
     const course = courses.find((c) => c.start <= d.date && (c.end === null || d.date <= c.end))
@@ -73,6 +75,13 @@ export async function exportCSV(): Promise<void> {
       d.cervixPosition ?? '',
       d.lh ?? '',
       course?.name ?? '',
+      Object.entries(d.painTypes ?? {}).map(([k, v]) => `${PAIN_TYPES.find((t) => t.id === k)?.label ?? k} ${v}`).join(', '),
+      (d.backLocations ?? []).map((b) => BACK_LOCATIONS.find((x) => x.id === b)?.label ?? b).join(', '),
+      (d.painCharacter ?? []).join(', '),
+      (d.impairments ?? []).join(', '),
+      d.stress ?? '',
+      (d.selfcare ?? []).join(', '),
+      d.mucusSource === 'muttermund' ? 'am Muttermund' : d.mucusSource === 'aussen' ? 'am Scheideneingang' : '',
     ].map(csvCell).join(';')
   })
   download(`zyklusblatt-${todayISO()}.csv`, '﻿' + [header.join(';'), ...rows].join('\r\n'), 'text/csv;charset=utf-8')

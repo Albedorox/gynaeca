@@ -12,9 +12,11 @@ import NfpSheet from './components/NfpSheet'
 import ContraceptionSheet from './components/ContraceptionSheet'
 import DaySheet from './components/DaySheet'
 import Menu, { type MenuItem } from './components/Menu'
+import FertilityView from './components/FertilityView'
+import ScalesSheet from './components/ScalesSheet'
 
-export type View = 'day' | 'month' | 'overview' | 'settings' | 'report'
-export type SheetKind = 'pain' | 'symptoms' | 'nfp' | 'contra' | 'day'
+export type View = 'day' | 'month' | 'overview' | 'settings' | 'report' | 'fertility'
+export type SheetKind = 'pain' | 'symptoms' | 'nfp' | 'contra' | 'day' | 'scales'
 
 export default function App() {
   const data = useAppData()
@@ -35,16 +37,20 @@ export default function App() {
   const close = () => setSheet(null)
   const open = (kind: SheetKind, date: ISODate) => setSheet({ kind, date })
   const back = () => setView('day')
+  const m = data.settings.modules
 
   const items: (MenuItem | 'sep')[] = [
     { label: 'Tagesansicht', hint: 'Heute und 3 Tage davor und danach', active: view === 'day', onClick: () => setView('day') },
     { label: 'Monatsansicht', hint: 'Ganzer Monat als Zyklusblatt', active: view === 'month', onClick: () => setView('month') },
     { label: 'Übersicht & Zyklen', hint: 'Mehrere Monate, X/Y-Kennzahlen', active: view === 'overview', onClick: () => setView('overview') },
+    ...(m.nfp ? [{ label: 'Fruchtbarkeit', hint: 'Auswertung, Kurve, Anleitung', active: view === 'fertility', onClick: () => setView('fertility') }] : []),
     'sep',
-    { label: 'Symptome hinzufügen', hint: 'Für den ausgewählten Tag', onClick: () => open('symptoms', focus) },
-    ...(data.settings.modules.nfp ? [{ label: 'NFP eintragen', hint: 'Temperatur, Schleim, Muttermund', onClick: () => open('nfp', focus) }] : []),
+    ...(m.pain ? [{ label: 'Schmerzen & Medikamente', hint: 'Für den ausgewählten Tag', onClick: () => open('pain', focus) }] : []),
+    ...(m.symptoms ? [{ label: 'Symptome hinzufügen', hint: 'Für den ausgewählten Tag', onClick: () => open('symptoms', focus) }] : []),
+    ...(m.nfp ? [{ label: 'Fruchtbarkeit eintragen', hint: 'Temperatur, Schleim' + (m.nfpCervix ? ', Muttermund' : '') + (m.lh ? ', LH-Test' : ''), onClick: () => open('nfp', focus) }] : []),
     { label: 'Notiz & Zyklusbeginn', hint: 'Für den ausgewählten Tag', onClick: () => open('day', focus) },
     'sep',
+    { label: 'Skalen erklärt', hint: 'Blutungsstärke und Schmerz', onClick: () => open('scales', focus) },
     { label: 'Arztbericht / PDF', onClick: () => setView('report') },
     { label: 'Einstellungen & Export', hint: 'Module, Backup, CSV', active: view === 'settings', onClick: () => setView('settings') },
   ]
@@ -77,6 +83,7 @@ export default function App() {
       )}
       {view === 'settings' && <SettingsView data={data} onBack={back} onReport={() => setView('report')} />}
       {view === 'report' && <Report data={data} onBack={back} />}
+      {view === 'fertility' && <FertilityView data={data} onBack={back} openSheet={open} />}
 
       {menu && <Menu focus={focus} items={items} onClose={() => setMenu(false)} />}
 
@@ -84,6 +91,7 @@ export default function App() {
       {sheet?.kind === 'symptoms' && <SymptomSheet data={data} date={sheet.date} onClose={close} />}
       {sheet?.kind === 'nfp' && <NfpSheet data={data} date={sheet.date} onClose={close} />}
       {sheet?.kind === 'contra' && <ContraceptionSheet data={data} date={sheet.date} onClose={close} />}
+      {sheet?.kind === 'scales' && <ScalesSheet onClose={close} />}
       {sheet?.kind === 'day' && <DaySheet data={data} date={sheet.date} onClose={close} />}
     </div>
   )
