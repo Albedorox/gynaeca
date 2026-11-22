@@ -1,6 +1,6 @@
 // Beispieldaten zum Ausprobieren: drei vollständige Zyklen und ein laufender.
 // Eigene, frei erfundene Werte (keine Kopie fremder Beispielzyklen).
-import { db, saveSettings } from './db'
+import { replaceAll, saveSettings } from './db'
 import { addDays, todayISO, type ISODate } from './dates'
 import { emptyDay, type DayEntry, type MucusCode } from './model'
 
@@ -80,11 +80,9 @@ export async function loadDemo(): Promise<void> {
   days.push(...cycle(start, 9, 0))
   // Folgetag nach dem Cheat Day: etwas mehr Schmerz
   for (let i = 1; i < days.length; i++) if (days[i - 1].cheatDay && (days[i].pain ?? 0) < 4) days[i].pain = 4
-  await db.transaction('rw', db.days, db.courses, async () => {
-    await db.days.clear()
-    await db.days.bulkPut(days)
-    await db.courses.clear()
-    await db.courses.add({ kind: 'gyn', name: 'Agnus castus (Mönchspfeffer)', dose: '1 Tablette morgens', start: addDays(today, -60), end: null })
+  await replaceAll({
+    days,
+    courses: [{ kind: 'gyn', name: 'Agnus castus (Mönchspfeffer)', dose: '1 Tablette morgens', start: addDays(today, -60), end: null }],
   })
   await saveSettings({
     modules: { contraception: false, pain: true, endo: true, symptoms: true, nfp: true, nfpMucus: true, nfpCervix: false, lh: true, gynMeds: true, sex: true },

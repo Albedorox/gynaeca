@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import Sheet, { Chip } from './Sheet'
-import { db, saveSettings } from '../lib/db'
+import { addCourse, deleteCourse, saveSettings, updateCourse } from '../lib/db'
 import { addDays, formatDE, weekdayShort, type ISODate } from '../lib/dates'
 import { courseOn, type AppData } from '../lib/useData'
 
@@ -18,7 +18,7 @@ export default function ContraceptionSheet({ data, date, onClose }: { data: AppD
           <button
             className="btn primary"
             onClick={async () => {
-              await db.courses.update(id, { end: date })
+              await updateCourse(id, { end: date })
               onClose()
             }}
           >
@@ -27,8 +27,8 @@ export default function ContraceptionSheet({ data, date, onClose }: { data: AppD
           <button
             className="btn"
             onClick={async () => {
-              if (date === active.start) await db.courses.delete(id)
-              else await db.courses.update(id, { end: addDays(date, -1) })
+              if (date === active.start) await deleteCourse(id)
+              else await updateCourse(id, { end: addDays(date, -1) })
               onClose()
             }}
           >
@@ -38,7 +38,7 @@ export default function ContraceptionSheet({ data, date, onClose }: { data: AppD
             <button
               className="btn"
               onClick={async () => {
-                await db.courses.update(id, { end: null })
+                await updateCourse(id, { end: null })
                 onClose()
               }}
             >
@@ -48,7 +48,7 @@ export default function ContraceptionSheet({ data, date, onClose }: { data: AppD
           <button
             className="btn danger"
             onClick={async () => {
-              await db.courses.delete(id)
+              await deleteCourse(id)
               onClose()
             }}
           >
@@ -64,7 +64,7 @@ export default function ContraceptionSheet({ data, date, onClose }: { data: AppD
     if (!n) return
     // Beginnt später schon ein anderer Zeitraum, endet dieser davor.
     const next = data.courses.find((c) => !c.kind && c.start > date)
-    await db.courses.add({ name: n, start: date, end: next ? addDays(next.start, -1) : null })
+    await addCourse({ name: n, start: date, end: next ? addDays(next.start, -1) : null })
     if (!data.settings.contraceptionFavorites.includes(n)) {
       await saveSettings({ contraceptionFavorites: [...data.settings.contraceptionFavorites, n] })
     }

@@ -1,4 +1,4 @@
-import { db, getSettings } from './db'
+import { clearAll, db, getSettings, mergeSettings, replaceAll } from './db'
 import { todayISO } from './dates'
 import type { ContraceptionCourse, DayEntry, Settings } from './model'
 import { normalizeDay } from './model'
@@ -111,20 +111,10 @@ export async function importJSON(file: File): Promise<{ days: number; courses: n
   }
   const days = data.days.map((d) => normalizeDay(d))
   const courses = (data.courses ?? []).map(({ id: _id, ...c }) => c)
-  await db.transaction('rw', db.days, db.courses, db.settings, async () => {
-    await db.days.clear()
-    await db.courses.clear()
-    await db.days.bulkPut(days)
-    await db.courses.bulkAdd(courses)
-    if (data.settings) await db.settings.put({ ...data.settings, id: 'app' })
-  })
+  await replaceAll({ days, courses, settings: data.settings ? mergeSettings(data.settings) : undefined })
   return { days: days.length, courses: courses.length }
 }
 
 export async function deleteAll(): Promise<void> {
-  await db.transaction('rw', db.days, db.courses, db.settings, async () => {
-    await db.days.clear()
-    await db.courses.clear()
-    await db.settings.clear()
-  })
+  await clearAll()
 }

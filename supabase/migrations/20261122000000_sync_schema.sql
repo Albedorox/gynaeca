@@ -1,4 +1,4 @@
--- Gynaeca: Schema für Nutzerkonto und verschlüsselten Sync (ENTWURF, noch nicht angewendet)
+-- Gynaeca: Schema für Nutzerkonto und verschlüsselten Sync (angewendet am 22.11.2026)
 --
 -- Grundsatz: Der Server speichert nur verschlüsselte Datensätze. Alle Gesundheitsdaten
 -- werden im Browser mit AES-256-GCM verschlüsselt, bevor sie gesendet werden.

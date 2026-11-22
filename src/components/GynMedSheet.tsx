@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import Sheet, { Chip } from './Sheet'
-import { db, saveSettings } from '../lib/db'
+import { addCourse, deleteCourse, saveSettings, updateCourse } from '../lib/db'
 import { addDays, formatDE, weekdayShort, type ISODate } from '../lib/dates'
 import type { AppData } from '../lib/useData'
 
@@ -26,7 +26,7 @@ export default function GynMedSheet({ data, date, id, onClose }: { data: AppData
             value={dose}
             placeholder="z. B. 1 Tablette morgens"
             onChange={(e) => setDose(e.target.value)}
-            onBlur={() => db.courses.update(cid, { dose: dose.trim() || undefined })}
+            onBlur={() => updateCourse(cid, { dose: dose.trim() || undefined })}
           />
         </label>
         <p className="muted">Ausgewählter Tag: {sub}</p>
@@ -34,7 +34,7 @@ export default function GynMedSheet({ data, date, id, onClose }: { data: AppData
           <button
             className="btn primary"
             onClick={async () => {
-              await db.courses.update(cid, { end: date, dose: dose.trim() || undefined })
+              await updateCourse(cid, { end: date, dose: dose.trim() || undefined })
               onClose()
             }}
           >
@@ -44,7 +44,7 @@ export default function GynMedSheet({ data, date, id, onClose }: { data: AppData
             <button
               className="btn"
               onClick={async () => {
-                await db.courses.update(cid, { end: null })
+                await updateCourse(cid, { end: null })
                 onClose()
               }}
             >
@@ -54,7 +54,7 @@ export default function GynMedSheet({ data, date, id, onClose }: { data: AppData
           <button
             className="btn danger"
             onClick={async () => {
-              await db.courses.delete(cid)
+              await deleteCourse(cid)
               onClose()
             }}
           >
@@ -70,7 +70,7 @@ export default function GynMedSheet({ data, date, id, onClose }: { data: AppData
     if (!n) return
     // Gleiches Mittel, das später neu beginnt: dieser Zeitraum endet davor.
     const next = data.courses.find((c) => c.kind === 'gyn' && c.name === n && c.start > date)
-    await db.courses.add({ kind: 'gyn', name: n, start: date, end: next ? addDays(next.start, -1) : null, dose: dose.trim() || undefined })
+    await addCourse({ kind: 'gyn', name: n, start: date, end: next ? addDays(next.start, -1) : null, dose: dose.trim() || undefined })
     if (!favs.includes(n)) await saveSettings({ gynMedFavorites: [...favs, n] })
     onClose()
   }

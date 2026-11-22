@@ -15,12 +15,12 @@ https://claude.ai/artifact/NsXBsjYYwWrQz3J3YsbPy9
 
 ## Dateien
 
-- `supabase/migrations/20261122000000_sync_schema.sql` – Schema, RLS, Funktionen. **Noch nicht angewendet.** Lokal gegen Postgres 16 mit nachgebildetem `auth`-Schema getestet.
+- `supabase/migrations/20261122000000_sync_schema.sql` – Schema, RLS, Funktionen. Lokal gegen Postgres 16 mit nachgebildetem `auth`-Schema getestet. Wird im Supabase-Projekt über den SQL-Editor angewendet.
 
 ## Umsetzungsschritte
 
 1. Supabase vorbereiten (AVV, SMTP, E-Mail-Vorlage mit `{{ .Token }}`, Site-URL), Schema anwenden.
-2. Alle Schreibzugriffe nach `src/lib/db.ts`, Dexie Version 2 (`uid` für Verläufe, Tabellen `sync`, `syncState`, `keys`).
+2. ✓ Alle Schreibzugriffe nach `src/lib/db.ts`, Dexie Version 2 (`uid` für Verläufe, Tabellen `sync`, `syncState`, `keys`). Jede Änderung setzt im selben Schritt einen Eintrag in `sync` (dirty, Löschmarke).
 3. `src/lib/crypto.ts` mit Tests.
 4. `src/lib/sync.ts` mit Zusammenführen und Tests.
 5. Oberfläche „Konto & Synchronisation“.
