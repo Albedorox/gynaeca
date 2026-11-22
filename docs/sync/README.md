@@ -21,7 +21,7 @@ https://claude.ai/artifact/NsXBsjYYwWrQz3J3YsbPy9
 
 1. Supabase vorbereiten (AVV, SMTP, E-Mail-Vorlage mit `{{ .Token }}`, Site-URL), Schema anwenden.
 2. ✓ Alle Schreibzugriffe nach `src/lib/db.ts`, Dexie Version 2 (`uid` für Verläufe, Tabellen `sync`, `syncState`, `keys`). Jede Änderung setzt im selben Schritt einen Eintrag in `sync` (dirty, Löschmarke).
-3. `src/lib/crypto.ts` mit Tests.
+3. ✓ `src/lib/crypto.ts` mit Tests: Hauptschlüssel, Verpackung per Argon2id (64 MiB, t=3) und Wiederherstellungscode (24 Zeichen Crockford-Base32, HKDF), AES-256-GCM mit AAD (Nutzer-ID, Sammlung, Datensatz-Name, Schlüsselversion), HMAC-Datensatz-Namen, Schlüssel als nicht exportierbare CryptoKeys in `db.keys`.
 4. `src/lib/sync.ts` mit Zusammenführen und Tests.
 5. Oberfläche „Konto & Synchronisation“.
 6. Testphase auf zwei Geräten, dann Google und Apple.
