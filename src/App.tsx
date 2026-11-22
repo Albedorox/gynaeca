@@ -14,6 +14,7 @@ import DaySheet from './components/DaySheet'
 import Menu, { type MenuItem } from './components/Menu'
 import FertilityView from './components/FertilityView'
 import ScalesSheet from './components/ScalesSheet'
+import { useBackButton } from './lib/useBackButton'
 
 export type View = 'day' | 'month' | 'overview' | 'settings' | 'report' | 'fertility'
 export type SheetKind = 'pain' | 'symptoms' | 'nfp' | 'contra' | 'day' | 'scales'
@@ -26,6 +27,13 @@ export default function App() {
   const [view, setView] = useState<View>('day')
   const [menu, setMenu] = useState(false)
   const [sheet, setSheet] = useState<{ kind: SheetKind; date: ISODate } | null>(null)
+
+  const depth = (view !== 'day' ? 1 : 0) + (menu ? 1 : 0) + (sheet ? 1 : 0)
+  useBackButton(depth, () => {
+    if (sheet) setSheet(null)
+    else if (menu) setMenu(false)
+    else if (view !== 'day') setView('day')
+  })
 
   if (!data.ready) return <div className="loading">Lade …</div>
 
