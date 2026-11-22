@@ -1,0 +1,27 @@
+# Nutzerkonto und Sync (Konzept, Entwurf)
+
+Stand: 22.11.2026. Ausführliches Konzept als Claude Doc:
+https://claude.ai/artifact/NsXBsjYYwWrQz3J3YsbPy9
+
+## Kurzfassung
+
+- **Offline zuerst.** IndexedDB (Dexie) bleibt die maßgebliche Datenquelle. Ein Konto ist freiwillig und dient nur Sync und Sicherung.
+- **Ende-zu-Ende-verschlüsselt.** Jeder Datensatz (Tag, Verlauf, Einstellungen) wird im Browser mit AES-256-GCM verschlüsselt. Datensatz-Namen (z. B. das Datum) werden per HMAC verschleiert. Der Hauptschlüssel liegt auf dem Server nur verpackt (Argon2id aus einem Sync-Passwort, zweite Verpackung mit Wiederherstellungscode).
+- **Generisches Schema.** Supabase (Projekt `gynaeca`, eu-central-1 Frankfurt) kennt nur `key_bundles`, `records` und `consents`. Neue App-Felder brauchen keine Migration.
+- **Sync:** Abholen per `seq > Abholstand`, Senden über `push_records` mit Versionsprüfung. Konflikte führt das Gerät per Drei-Wege-Vergleich zusammen.
+- **Login:** zuerst E-Mail-Code (OTP, kein Magic Link wegen iOS-PWA), später Google und Apple.
+- **RLS:** jede Zeile gehört genau einer Nutzerin, `anon` hat keinen Zugriff.
+- **DSGVO:** Einwilligung nach Art. 9 Abs. 2 lit. a in `consents`, Konto löschen über `delete_my_account()` mit Cascade.
+
+## Dateien
+
+- `supabase/migrations/20261122000000_sync_schema.sql` – Schema, RLS, Funktionen. Lokal gegen Postgres 16 mit nachgebildetem `auth`-Schema getestet. Wird im Supabase-Projekt über den SQL-Editor angewendet.
+
+## Umsetzungsschritte
+
+1. Supabase vorbereiten (AVV, SMTP, E-Mail-Vorlage mit `{{ .Token }}`, Site-URL), Schema anwenden.
+2. ✓ Alle Schreibzugriffe nach `src/lib/db.ts`, Dexie Version 2 (`uid` für Verläufe, Tabellen `sync`, `syncState`, `keys`). Jede Änderung setzt im selben Schritt einen Eintrag in `sync` (dirty, Löschmarke).
+3. `src/lib/crypto.ts` mit Tests.
+4. `src/lib/sync.ts` mit Zusammenführen und Tests.
+5. Oberfläche „Konto & Synchronisation“.
+6. Testphase auf zwei Geräten, dann Google und Apple.

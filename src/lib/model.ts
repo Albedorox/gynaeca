@@ -79,6 +79,10 @@ export interface DayEntry {
 
 export interface ContraceptionCourse {
   id?: number
+  /** Geräteübergreifende Kennung für den Sync (ab Datenbank-Version 2) */
+  uid?: string
+  /** Zeitpunkt der letzten Änderung (ms) */
+  updatedAt?: number
   name: string
   start: ISODate
   /** Letzter Einnahmetag (inklusive). null = läuft noch */
