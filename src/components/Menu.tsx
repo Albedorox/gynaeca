@@ -1,4 +1,5 @@
-import { useEffect } from 'react'
+import { useRef } from 'react'
+import { useDialogFocus } from '../lib/useDialogFocus'
 import { formatDE, type ISODate } from '../lib/dates'
 
 export interface MenuItem {
@@ -10,14 +11,11 @@ export interface MenuItem {
 
 /** Seitliches Menü (von links), schließt bei Tipp außerhalb oder Escape. */
 export default function Menu({ focus, items, onClose }: { focus: ISODate; items: (MenuItem | 'sep')[]; onClose: () => void }) {
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose()
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [onClose])
+  const ref = useRef<HTMLElement>(null)
+  useDialogFocus(ref, onClose)
   return (
     <div className="menu-backdrop" onPointerDown={(e) => e.target === e.currentTarget && onClose()}>
-      <nav className="menu" aria-label="Menü">
+      <nav className="menu" aria-label="Menü" ref={ref} tabIndex={-1}>
         <div className="menu-head">
           <b>Zyklusblatt</b>
           <small className="muted">Ausgewählter Tag: {formatDE(focus)}</small>
@@ -29,6 +27,7 @@ export default function Menu({ focus, items, onClose }: { focus: ISODate; items:
             <button
               key={it.label}
               className={`menu-item${it.active ? ' on' : ''}`}
+              aria-current={it.active ? 'page' : undefined}
               onClick={() => {
                 onClose()
                 it.onClick()

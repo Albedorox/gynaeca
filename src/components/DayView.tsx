@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { AppData } from '../lib/useData'
 import { courseOn } from '../lib/useData'
 import { addDays, diffDays, monthName, parseISO, todayISO, weekdayShort, type ISODate } from '../lib/dates'
@@ -35,6 +35,18 @@ export default function DayView({ data, focus, setFocus, openSheet, openMenu }: 
   const swipe = useRef<{ y: number; t: number } | null>(null)
   const mods = data.settings.modules
   const tapSheet: SheetKind = mods.pain ? 'pain' : mods.symptoms ? 'symptoms' : 'day'
+  const [undo, setUndo] = useState<{ iso: ISODate; before: number; after: number } | null>(null)
+  useEffect(() => {
+    if (!undo) return
+    const t = window.setTimeout(() => setUndo(null), 5000)
+    return () => window.clearTimeout(t)
+  }, [undo])
+  const setBleeding = (iso: ISODate, before: number, after: number) => {
+    if (before === after) return
+    updateDay(iso, { bleeding: after })
+    // mehrere Änderungen am selben Tag hintereinander: Rückgängig stellt den Ausgangswert her
+    setUndo((u) => ({ iso, before: u && u.iso === iso ? u.before : before, after }))
+  }
 
   return (
     <div className="dayview">
@@ -78,9 +90,27 @@ export default function DayView({ data, focus, setFocus, openSheet, openMenu }: 
         <button className="dv-nav" onClick={() => setFocus(addDays(focus, -1))} aria-label="Einen Tag zurück">︿</button>
         {data.settings.modules.contraception && <ContraRail data={data} days={days} openSheet={openSheet} />}
         {days.map((iso) => (
-          <DayCard key={iso} iso={iso} data={data} isFocus={iso === focus} isToday={iso === today} onTap={() => openSheet(tapSheet, iso)} />
+          <DayCard key={iso} iso={iso} data={data} isFocus={iso === focus} isToday={iso === today} onTap={() => openSheet(tapSheet, iso)} onBleeding={setBleeding} />
         ))}
         <button className="dv-nav" onClick={() => setFocus(addDays(focus, 1))} aria-label="Einen Tag vor">﹀</button>
+      </div>
+      <div className="toast-slot" role="status" aria-live="polite">
+        {undo && (
+          <div className="toast">
+            <span>
+              Blutung {Number(undo.iso.slice(8))}.: {fmt(undo.after)} gespeichert
+            </span>
+            <button
+              className="btn ghost small"
+              onClick={() => {
+                updateDay(undo.iso, { bleeding: undo.before })
+                setUndo(null)
+              }}
+            >
+              Rückgängig
+            </button>
+          </div>
+        )}
       </div>
     </div>
   )
@@ -119,7 +149,9 @@ function Drops({ value }: { value: number }) {
   )
 }
 
-function DayCard({ iso, data, isFocus, isToday, onTap }: { iso: ISODate; data: AppData; isFocus: boolean; isToday: boolean; onTap: () => void }) {
+const fmt = (v: number) => String(v).replace('.', ',')
+
+function DayCard({ iso, data, isFocus, isToday, onTap, onBleeding }: { iso: ISODate; data: AppData; isFocus: boolean; isToday: boolean; onTap: () => void; onBleeding: (iso: ISODate, before: number, after: number) => void }) {
   const d = data.days.get(iso)
   const bleeding = d?.bleeding ?? 0
   const [draft, setDraft] = useState<number | null>(null)
@@ -146,12 +178,21 @@ function DayCard({ iso, data, isFocus, isToday, onTap }: { iso: ISODate; data: A
       className={`dv-card${isFocus ? ' focus' : ''}${isToday ? ' today' : ''}${draft !== null ? ' dragging' : ''}${future ? ' future' : ''}`}
       role="button"
       tabIndex={0}
-      aria-label={`${weekdayShort(iso)} ${Number(iso.slice(8))}. Tippen: Schmerz. Halten und ziehen: Blutung.`}
+      aria-label={[
+        `${weekdayShort(iso)} ${Number(iso.slice(8))}.${isToday ? ' (heute)' : ''}`,
+        zt ? `Zyklustag ${zt}` : '',
+        bleeding > 0 ? `Blutung ${fmt(bleeding)}, ${bleedingLevel(bleeding).label}` : d?.spotting ? 'Schmierblutung' : '',
+        d?.pain != null ? `Schmerz ${d.pain}` : '',
+        mc > 0 ? `${mc} Medikamente` : '',
+        'Eingabe: Pfeil links/rechts ändert die Blutung, Enter öffnet Details.',
+      ]
+        .filter(Boolean)
+        .join('. ')}
       onContextMenu={(e) => e.preventDefault()}
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') onTap()
-        else if (e.key === 'ArrowRight') updateDay(iso, { bleeding: Math.min(5, bleeding + 0.5) })
-        else if (e.key === 'ArrowLeft') updateDay(iso, { bleeding: Math.max(0, bleeding - 0.5) })
+        else if (e.key === 'ArrowRight') onBleeding(iso, bleeding, Math.min(5, bleeding + 0.5))
+        else if (e.key === 'ArrowLeft') onBleeding(iso, bleeding, Math.max(0, bleeding - 0.5))
         else return
         e.preventDefault()
       }}
@@ -206,7 +247,7 @@ function DayCard({ iso, data, isFocus, isToday, onTap }: { iso: ISODate; data: A
         if (s.dragging) {
           e.stopPropagation()
           setDraft(null)
-          if (s.last !== bleeding) updateDay(iso, { bleeding: s.last })
+          onBleeding(iso, bleeding, s.last)
         } else if (!s.moved) {
           onTap()
         }
