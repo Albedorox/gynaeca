@@ -6,6 +6,10 @@ import { cycleDay } from '../lib/cycles'
 import { medCount } from '../lib/model'
 import { updateDay } from '../lib/db'
 import type { SheetKind } from '../App'
+import { bleedingLevel } from '../lib/knowledge'
+import { dayStatus, isOvulationDay, STATUS_LABEL } from '../lib/nfp'
+import AlertBanner from './AlertBanner'
+import { loadDemo } from '../lib/demo'
 
 const RANGE = 3 // Tage vor und nach dem Fokus-Tag
 const LONG_PRESS_MS = 320
@@ -29,6 +33,8 @@ export default function DayView({ data, focus, setFocus, openSheet, openMenu }: 
   const days = Array.from({ length: RANGE * 2 + 1 }, (_, i) => addDays(focus, i - RANGE))
   const { m0, y } = parseISO(focus)
   const swipe = useRef<{ y: number; t: number } | null>(null)
+  const mods = data.settings.modules
+  const tapSheet: SheetKind = mods.pain ? 'pain' : mods.symptoms ? 'symptoms' : 'day'
 
   return (
     <div className="dayview">
@@ -43,6 +49,16 @@ export default function DayView({ data, focus, setFocus, openSheet, openMenu }: 
         )}
       </header>
 
+      <AlertBanner data={data} openSheet={openSheet} />
+      {data.dayList.length === 0 && (
+        <div className="alert alert-info">
+          <span className="alert-main">
+            <b>Noch keine Einträge.</b>
+            <span className="alert-text">Halten und zur Seite ziehen trägt die Blutung ein. Zum Ausprobieren können Sie Beispielzyklen laden.</span>
+          </span>
+          <button className="btn small" onClick={() => loadDemo()}>Beispiel laden</button>
+        </div>
+      )}
       <div
         className="dv-list"
         onPointerDown={(e) => (swipe.current = { y: e.clientY, t: Date.now() })}
@@ -62,7 +78,7 @@ export default function DayView({ data, focus, setFocus, openSheet, openMenu }: 
         <button className="dv-nav" onClick={() => setFocus(addDays(focus, -1))} aria-label="Einen Tag zurück">︿</button>
         {data.settings.modules.contraception && <ContraRail data={data} days={days} openSheet={openSheet} />}
         {days.map((iso) => (
-          <DayCard key={iso} iso={iso} data={data} isFocus={iso === focus} isToday={iso === today} onTap={() => openSheet('pain', iso)} />
+          <DayCard key={iso} iso={iso} data={data} isFocus={iso === focus} isToday={iso === today} onTap={() => openSheet(tapSheet, iso)} />
         ))}
         <button className="dv-nav" onClick={() => setFocus(addDays(focus, 1))} aria-label="Einen Tag vor">﹀</button>
       </div>
@@ -112,8 +128,11 @@ function DayCard({ iso, data, isFocus, isToday, onTap }: { iso: ISODate; data: A
   const zt = cycleDay(data.cycles, iso)
   const mc = medCount(d)
   const symptoms = d?.symptoms.length ?? 0
-  const isEmpty = bleeding === 0 && !d?.spotting && d?.pain == null && mc === 0 && symptoms === 0
+  const painTypeCount = Object.keys(d?.painTypes ?? {}).length
+  const isEmpty = bleeding === 0 && !d?.spotting && d?.pain == null && mc === 0 && symptoms === 0 && painTypeCount === 0 && d?.temp == null
   const future = diffDays(todayISO(), iso) > 0
+  const status = data.settings.modules.nfp ? dayStatus(data.nfp, iso, todayISO()) : null
+  const ovu = data.settings.modules.nfp && isOvulationDay(data.nfp, iso)
 
   const end = () => {
     const s = st.current
@@ -207,9 +226,13 @@ function DayCard({ iso, data, isFocus, isToday, onTap }: { iso: ISODate; data: A
           <>
             <Drops value={value} />
             <span className="dv-big">{String(value).replace('.', ',')}</span>
+            <span className="dv-level">
+              <b>{bleedingLevel(value).label}</b>
+              <small>{bleedingLevel(value).criterion}</small>
+            </span>
           </>
         ) : isEmpty ? (
-          isFocus && <span className="dv-hint">Tippen: Schmerzen · Halten &amp; ziehen: Blutung</span>
+          isFocus && <span className="dv-hint">{data.settings.modules.pain ? 'Tippen: Schmerzen · ' : ''}Halten &amp; ziehen: Blutung</span>
         ) : (
           <>
             {(bleeding > 0 || d?.spotting) && <Drops value={bleeding} />}
@@ -225,10 +248,19 @@ function DayCard({ iso, data, isFocus, isToday, onTap }: { iso: ISODate; data: A
               </span>
             )}
             {symptoms > 0 && <span className="dv-tag">+{symptoms} Sympt.</span>}
+            {d?.temp != null && data.settings.modules.nfp && <span className="dv-tag temp-tag">{d.temp.toFixed(2).replace('.', ',')}°</span>}
+            {d?.mucus && data.settings.modules.nfp && data.settings.modules.nfpMucus && <span className="dv-tag">{d.mucus}</span>}
           </>
         )}
       </span>
-      {zt && <span className="dv-zt">ZT {zt}</span>}
+      <span className="dv-side">
+        {status && (
+          <span className={`fert fert-${status}${ovu ? ' ovu' : ''}`} title={ovu ? 'Eisprung wahrscheinlich' : STATUS_LABEL[status]}>
+            {ovu ? 'Eisprung' : STATUS_LABEL[status]}
+          </span>
+        )}
+        {zt && <span className="dv-zt">ZT {zt}</span>}
+      </span>
     </div>
   )
 }

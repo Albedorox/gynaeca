@@ -62,8 +62,12 @@ export default function MonthView({ data, ym, setYm, openSheet, openMenu, onPick
   if (settings.modules.contraception) cols.push('contra')
   cols.push('day', 'zt', 'bleed', 'pain')
   if (settings.modules.symptoms) cols.push('sym')
-  if (settings.modules.nfp) cols.push('temp', 'mucus', 'cervix')
-  if (settings.modules.lh) cols.push('lh')
+  if (settings.modules.nfp) {
+    cols.push('temp')
+    if (settings.modules.nfpMucus) cols.push('mucus')
+    if (settings.modules.nfpCervix) cols.push('cervix')
+    if (settings.modules.lh) cols.push('lh')
+  }
   const template = cols.map((c) => COL_WIDTH[c]).join(' ')
 
   const go = (delta: number) => setYm(shiftMonth(y, m0, delta))

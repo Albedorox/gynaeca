@@ -4,6 +4,8 @@ import { deleteAll, exportCSV, exportJSON, importJSON } from '../lib/exporter'
 import type { AppData } from '../lib/useData'
 import type { Settings } from '../lib/model'
 import { Chip } from './Sheet'
+import { loadDemo } from '../lib/demo'
+import { NFP_DISCLAIMER } from '../lib/knowledge'
 
 function Toggle({ label, hint, on, onChange }: { label: string; hint?: string; on: boolean; onChange: (v: boolean) => void }) {
   return (
@@ -14,6 +16,27 @@ function Toggle({ label, hint, on, onChange }: { label: string; hint?: string; o
       </span>
       <input type="checkbox" checked={on} onChange={(e) => onChange(e.target.checked)} />
       <i aria-hidden="true" />
+    </label>
+  )
+}
+
+function NumberSetting({ label, value, min, max, placeholder, onChange }: { label: string; value: number | null; min: number; max: number; placeholder: string; onChange: (v: number | null) => void }) {
+  const [text, setText] = useState(value?.toString() ?? '')
+  return (
+    <label className="row-setting">
+      <span>{label}</span>
+      <input
+        className="num-input"
+        inputMode="numeric"
+        placeholder={placeholder}
+        value={text}
+        onChange={(e) => {
+          setText(e.target.value)
+          const v = parseInt(e.target.value, 10)
+          if (e.target.value.trim() === '') onChange(null)
+          else if (Number.isFinite(v) && v >= min && v <= max) onChange(v)
+        }}
+      />
     </label>
   )
 }
@@ -32,6 +55,7 @@ export default function SettingsView({ data, onBack, onReport }: { data: AppData
   const setModule = (k: keyof Settings['modules'], v: boolean) => saveSettings({ modules: { ...s.modules, [k]: v } })
   const [msg, setMsg] = useState<string | null>(null)
   const [confirmDelete, setConfirmDelete] = useState(false)
+  const [confirmDemo, setConfirmDemo] = useState(false)
   const [medName, setMedName] = useState('')
   const [medDoses, setMedDoses] = useState('')
   const fileRef = useRef<HTMLInputElement>(null)
@@ -44,10 +68,44 @@ export default function SettingsView({ data, onBack, onReport }: { data: AppData
       </header>
       <div className="page-body">
         <Section title="Module">
+          <p className="hint">Die Periode wird immer erfasst. Alles andere schalten Sie nach Bedarf dazu.</p>
+          <Toggle label="Schmerzen & Medikamente" hint="Schmerzskala 0–10, ab 4 Frage nach Schmerzmitteln" on={s.modules.pain} onChange={(v) => setModule('pain', v)} />
+          <Toggle
+            label="Endometriose-Fragen"
+            hint="Schmerzarten mit Stärke, Rücken, Alltag, Stress, Bewegung"
+            on={s.modules.endo}
+            onChange={(v) => saveSettings({ modules: { ...s.modules, endo: v, pain: v ? true : s.modules.pain } })}
+          />
+          <Toggle label="Begleitsymptome" hint="Kopfschmerz, Verdauung, Stimmung und eigene Tags" on={s.modules.symptoms} onChange={(v) => setModule('symptoms', v)} />
           <Toggle label="Hormonelle Verhütung" hint="Balken links neben der Tageszahl" on={s.modules.contraception} onChange={(v) => setModule('contraception', v)} />
-          <Toggle label="Begleitsymptome" hint="Inkl. Endometriose-Beschwerden und eigene Tags" on={s.modules.symptoms} onChange={(v) => setModule('symptoms', v)} />
-          <Toggle label="NFP (symptothermal)" hint="Basaltemperatur, Zervixschleim, Muttermund" on={s.modules.nfp} onChange={(v) => setModule('nfp', v)} />
-          <Toggle label="LH-Test" hint="Tippen wechselt: – negativ, + positiv, ★ Peak" on={s.modules.lh} onChange={(v) => setModule('lh', v)} />
+          <Toggle label="Fruchtbarkeit" hint="Natürliche Familienplanung (symptothermale Methode)" on={s.modules.nfp} onChange={(v) => setModule('nfp', v)} />
+          {s.modules.nfp && (
+            <div className="sub-toggles">
+              <p className="hint">Zeichen für die Auswertung. Die Temperatur ist immer dabei, dazu Schleim oder Muttermund.</p>
+              <Toggle label="Zervixschleim" hint="Standard: am Muttermund entnommen" on={s.modules.nfpMucus} onChange={(v) => setModule('nfpMucus', v)} />
+              <Toggle
+                label="Muttermund"
+                hint={s.modules.nfpMucus ? 'Wird zusätzlich notiert, ausgewertet wird der Schleim' : 'Ersetzt den Schleim in der Auswertung'}
+                on={s.modules.nfpCervix}
+                onChange={(v) => setModule('nfpCervix', v)}
+              />
+              <Toggle label="LH-Test" hint="Zur Bestätigung, ändert die Auswertung nicht" on={s.modules.lh} onChange={(v) => setModule('lh', v)} />
+              <p className="hint">{NFP_DISCLAIMER}</p>
+            </div>
+          )}
+        </Section>
+
+        <Section title="Angaben für Hinweise">
+          <p className="hint">Damit die App Zykluslängen passend zu Ihrem Alter einordnen kann. Bleibt auf diesem Gerät.</p>
+          <NumberSetting
+            label="Geburtsjahr"
+            value={s.birthYear}
+            min={1940}
+            max={new Date().getFullYear() - 8}
+            placeholder="z. B. 1992"
+            onChange={(v) => saveSettings({ birthYear: v })}
+          />
+          <NumberSetting label="Alter bei der ersten Periode" value={s.menarcheAge} min={7} max={20} placeholder="z. B. 12" onChange={(v) => saveSettings({ menarcheAge: v })} />
         </Section>
 
         <Section title="Zyklusberechnung">
@@ -130,6 +188,24 @@ export default function SettingsView({ data, onBack, onReport }: { data: AppData
             <button className="btn" onClick={() => exportJSON()}>Backup als JSON speichern</button>
             <button className="btn" onClick={() => exportCSV()}>Tabelle als CSV (Excel)</button>
             <button className="btn" onClick={() => fileRef.current?.click()}>Backup wiederherstellen …</button>
+            {!confirmDemo ? (
+              <button className="btn" onClick={() => setConfirmDemo(true)}>Beispieldaten laden …</button>
+            ) : (
+              <div className="confirm">
+                <span>Ersetzt alle Tageseinträge durch drei Beispielzyklen.</span>
+                <button
+                  className="btn primary"
+                  onClick={async () => {
+                    await loadDemo()
+                    setConfirmDemo(false)
+                    setMsg('Beispieldaten geladen.')
+                  }}
+                >
+                  Laden
+                </button>
+                <button className="btn" onClick={() => setConfirmDemo(false)}>Abbrechen</button>
+              </div>
+            )}
             <input
               ref={fileRef}
               type="file"
@@ -169,7 +245,7 @@ export default function SettingsView({ data, onBack, onReport }: { data: AppData
           {msg && <p className="msg">{msg}</p>}
         </Section>
 
-        <p className="hint center">Zyklusblatt v0.1 · offline nutzbar · zum Startbildschirm hinzufügen für App-Modus</p>
+        <p className="hint center">Zyklusblatt v0.2 · offline nutzbar · zum Startbildschirm hinzufügen für App-Modus</p>
       </div>
     </div>
   )
