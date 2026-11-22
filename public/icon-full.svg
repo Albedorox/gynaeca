@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#e07a9b"/>
+      <stop offset=".55" stop-color="#b83d68"/>
+      <stop offset="1" stop-color="#7d2350"/>
+    </linearGradient>
+    <radialGradient id="glow" cx=".5" cy=".42" r=".5">
+      <stop offset="0" stop-color="#ffd6e2" stop-opacity=".45"/>
+      <stop offset="1" stop-color="#ffd6e2" stop-opacity="0"/>
+    </radialGradient>
+    <g id="flower">
+      <circle cx="0" cy="-19" r="17" fill="#ffe3ea"/>
+      <circle cx="18" cy="-6" r="17" fill="#ffd0dc"/>
+      <circle cx="11" cy="15" r="17" fill="#ffe3ea"/>
+      <circle cx="-11" cy="15" r="17" fill="#ffd0dc"/>
+      <circle cx="-18" cy="-6" r="17" fill="#ffe3ea"/>
+      <circle r="11" fill="#f5b942"/>
+      <circle r="4.5" fill="#e08a2c"/>
+    </g>
+  </defs>
+  <rect width="512" height="512" fill="url(#bg)"/>
+  <rect width="512" height="512" fill="url(#glow)"/>
+  <g id="art">
+    <!-- Eileiter -->
+    <g fill="none" stroke="#fde9ef" stroke-width="16" stroke-linecap="round">
+      <path d="M190 206 C168 176 150 152 122 150"/>
+      <path d="M322 206 C344 176 362 152 390 150"/>
+    </g>
+    <!-- Blätter -->
+    <g fill="#a8dcb0">
+      <ellipse cx="160" cy="158" rx="9" ry="20" transform="rotate(-40 160 158)"/>
+      <ellipse cx="352" cy="158" rx="9" ry="20" transform="rotate(40 352 158)"/>
+    </g>
+    <!-- Gebärmutter -->
+    <path d="M176 216 C176 188 214 180 256 180 C298 180 336 188 336 216 C336 270 312 306 288 326 C282 331 280 338 280 346 L280 366 C280 380 270 388 256 388 C242 388 232 380 232 366 L232 346 C232 338 230 331 224 326 C200 306 176 270 176 216Z" fill="#fde9ef"/>
+    <path d="M212 214 C236 205 276 205 300 214 C288 246 272 274 256 298 C240 274 224 246 212 214Z" fill="#c2416b" opacity=".5"/>
+    <path d="M256 304 L256 366" stroke="#c2416b" stroke-opacity=".4" stroke-width="7" stroke-linecap="round"/>
+    <!-- Blüten an Stelle der Eierstöcke -->
+    <g transform="translate(112 150) scale(1.2)"><use href="#flower"/></g>
+    <g transform="translate(400 150) scale(1.2)"><use href="#flower"/></g>
+  </g>
+</svg>
