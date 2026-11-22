@@ -98,7 +98,7 @@ function CycleRing({ data, today, prediction, onOpenDay, onFertility }: { data: 
       key: 'start',
       node: (
         <>
-          <img className="ring-art" src={`${import.meta.env.BASE_URL}aquarell.jpg`} alt="" />
+          <Lineart className="ring-art" />
           <b className="ring-title">Willkommen</b>
           <span className="ring-sub">Wann begann Ihre letzte Periode?</span>
           <button className="btn primary btn-pill" onClick={() => onOpenDay(today)}>Periode eintragen</button>

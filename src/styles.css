@@ -742,7 +742,7 @@ h3 { font-size: 12px; letter-spacing: .08em; }
 .ring-num { font-family: var(--display); font-weight: 500; font-size: clamp(76px, 25vw, 104px); letter-spacing: -.02em; }
 .ring-label { font-family: var(--display); font-size: 26px; font-weight: 500; }
 .ring-title { font-family: var(--display); font-size: 24px; font-weight: 600; }
-.ring-art { width: 92px; height: 92px; border-radius: 50%; object-fit: cover; box-shadow: 0 0 0 1px var(--hair); margin-bottom: 4px; }
+.ring-art { width: 150px; height: 87px; margin-bottom: 6px; }
 
 /* Flächen: Haarlinie statt Schatten */
 .card, .cycle-card, .list-card, .set-card, .kpi, .alert, .theme-tile { box-shadow: none; border: 1px solid var(--hair); }
