@@ -20,6 +20,15 @@ nur über HTTPS oder localhost, also nach dem Deployment.
 
 ## Bedienung
 
+**Tagesansicht (Startseite):** Der heutige Tag mit 3 Tagen davor und danach, jeder Tag eine Karte.
+
+- Tippen auf eine Karte: Schmerz 0–10, Schmerzmittel, Schmierblutung
+- Halten und seitlich ziehen: Blutungsstärke 0–5 in 0,5er-Schritten, mit Live-Anzeige
+- Senkrecht wischen oder Pfeile: tageweise blättern, "Heute" springt zurück
+- Menü (☰): Monatsansicht, Übersicht & Zyklen, Symptome, Notiz & Zyklusbeginn, Arztbericht, Einstellungen & Export
+
+**Monatsansicht (über das Menü):** Tippen auf die Tageszahl öffnet den Tag in der Tagesansicht.
+
 | Spalte | Geste |
 |---|---|
 | Verhütung (links, optional) | Tippen: Präparat ab diesem Tag starten, oder bei laufender Einnahme beenden / absetzen |

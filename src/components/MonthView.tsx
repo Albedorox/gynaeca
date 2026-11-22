@@ -6,14 +6,15 @@ import { cycleDay, cycleLabel } from '../lib/cycles'
 import { medCount, type DayEntry } from '../lib/model'
 import { updateDay } from '../lib/db'
 import BleedingCell from './BleedingCell'
-import type { SheetKind, View } from '../App'
+import type { SheetKind } from '../App'
 
 interface Props {
   data: AppData
   ym: { y: number; m0: number }
   setYm: (v: { y: number; m0: number }) => void
   openSheet: (k: SheetKind, d: ISODate) => void
-  setView: (v: View) => void
+  openMenu: () => void
+  onPickDay: (d: ISODate) => void
 }
 
 type Col = 'contra' | 'day' | 'zt' | 'bleed' | 'pain' | 'sym' | 'temp' | 'mucus' | 'cervix' | 'lh'
@@ -49,7 +50,7 @@ const CERVIX_OPEN = { geschlossen: '●', leicht: '◐', offen: '○' } as const
 const CERVIX_FIRM = { hart: 'h', mittel: 'm', weich: 'w' } as const
 const CERVIX_POS = { tief: '↓', mittel: '→', hoch: '↑' } as const
 
-export default function MonthView({ data, ym, setYm, openSheet, setView }: Props) {
+export default function MonthView({ data, ym, setYm, openSheet, openMenu, onPickDay }: Props) {
   const { settings, days, cycles } = data
   const { y, m0 } = ym
   const n = daysInMonth(y, m0)
@@ -85,17 +86,16 @@ export default function MonthView({ data, ym, setYm, openSheet, setView }: Props
           swipe.current = null
         }}
       >
+        <button className="icon-btn" onClick={openMenu} aria-label="Menü">☰</button>
         <button className="icon-btn" onClick={() => go(-1)} aria-label="Vorheriger Monat">‹</button>
         <button className="month-title" onClick={() => setYm({ y: Number(today.slice(0, 4)), m0: Number(today.slice(5, 7)) - 1 })} title="Zum heutigen Monat">
           {monthName(m0)} <span className="muted">{y}</span>
         </button>
         <button className="icon-btn" onClick={() => go(1)} aria-label="Nächster Monat">›</button>
         <span className="spacer" />
-        <button className="icon-btn" onClick={() => setView('overview')} aria-label="Übersicht">▦</button>
-        <button className="icon-btn" onClick={() => setView('settings')} aria-label="Einstellungen">⚙</button>
       </header>
 
-      <div className="stats-strip" onClick={() => setView('overview')}>
+      <div className="stats-strip">
         {monthCycles.length === 0 ? (
           <span className="muted">Noch kein Zyklus in diesem Monat. Blutung im Feld wischen.</span>
         ) : (
@@ -125,7 +125,7 @@ export default function MonthView({ data, ym, setYm, openSheet, setView }: Props
               style={{ gridTemplateColumns: template }}
             >
               {cols.map((c) => (
-                <Cell key={c} col={c} iso={iso} d={d} data={data} first={first} last={last} openSheet={openSheet} />
+                <Cell key={c} col={c} iso={iso} d={d} data={data} first={first} last={last} openSheet={openSheet} onPickDay={onPickDay} />
               ))}
             </div>
           )
@@ -143,9 +143,10 @@ interface CellProps {
   first: ISODate
   last: ISODate
   openSheet: Props['openSheet']
+  onPickDay: (d: ISODate) => void
 }
 
-function Cell({ col, iso, d, data, first, last, openSheet }: CellProps) {
+function Cell({ col, iso, d, data, first, last, openSheet, onPickDay }: CellProps) {
   const { courses, cycles } = data
     switch (col) {
       case 'contra': {
@@ -170,7 +171,7 @@ function Cell({ col, iso, d, data, first, last, openSheet }: CellProps) {
       }
       case 'day':
         return (
-          <button className="cell day" onClick={() => openSheet('day', iso)}>
+          <button className="cell day" onClick={() => onPickDay(iso)} aria-label="In der Tagesansicht öffnen">
             <b>{Number(iso.slice(8, 10))}</b>
             <small>{weekdayShort(iso)}</small>
             {d?.note && <i className="note-dot" />}

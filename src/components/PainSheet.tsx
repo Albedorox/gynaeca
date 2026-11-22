@@ -5,7 +5,7 @@ import { formatDE, weekdayShort, type ISODate } from '../lib/dates'
 import type { AppData } from '../lib/useData'
 import type { MedIntake } from '../lib/model'
 
-export default function PainSheet({ data, date, onClose }: { data: AppData; date: ISODate; onClose: () => void }) {
+export default function PainSheet({ data, date, onClose, onSymptoms }: { data: AppData; date: ISODate; onClose: () => void; onSymptoms?: () => void }) {
   const d = data.days.get(date)
   const pain = d?.pain ?? null
   const meds = d?.meds ?? []
@@ -37,6 +37,10 @@ export default function PainSheet({ data, date, onClose }: { data: AppData; date
         ))}
       </div>
       <p className="hint">0 = kein Schmerz, 10 = stärkster vorstellbarer Schmerz. Nochmal tippen entfernt den Wert.</p>
+      <div className="chips">
+        <Chip on={d?.spotting} onClick={() => updateDay(date, { spotting: !d?.spotting })}>Schmierblutung</Chip>
+        {onSymptoms && <Chip onClick={onSymptoms}>Weitere Symptome …</Chip>}
+      </div>
 
       <h3>Schmerzmittel</h3>
       {meds.length === 0 && <p className="muted">Noch nichts eingetragen.</p>}
