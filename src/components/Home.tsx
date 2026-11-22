@@ -24,6 +24,7 @@ export default function Home({ data, ym, setYm, onOpenDay, onFertility }: Props)
   return (
     <div className="home">
       <header className="home-head">
+        <Lineart className="wordmark-art" />
         <span className="wordmark">Gynaeca</span>
       </header>
       <CycleRing data={data} today={today} prediction={prediction} onOpenDay={onOpenDay} onFertility={onFertility} />
@@ -97,9 +98,9 @@ function CycleRing({ data, today, prediction, onOpenDay, onFertility }: { data: 
       key: 'start',
       node: (
         <>
-          <span className="ring-kicker">Willkommen</span>
-          <b className="ring-title">Ihr Zyklus auf einen Blick</b>
-          <span className="ring-sub">Tragen Sie den ersten Tag Ihrer letzten Periode ein.</span>
+          <img className="ring-art" src={`${import.meta.env.BASE_URL}aquarell.jpg`} alt="" />
+          <b className="ring-title">Willkommen</b>
+          <span className="ring-sub">Wann begann Ihre letzte Periode?</span>
           <button className="btn primary btn-pill" onClick={() => onOpenDay(today)}>Periode eintragen</button>
         </>
       ),
@@ -170,10 +171,12 @@ function CycleRing({ data, today, prediction, onOpenDay, onFertility }: { data: 
 
   return (
     <section className="ring-wrap" aria-label="Zyklus heute">
-      <div className="ring-deco" aria-hidden="true" />
+      <Lineart className="ring-deco" />
       <div className="ring">
         <svg viewBox="0 0 260 260" className="ring-svg" aria-hidden="true">
           <circle cx={C} cy={C} r={R} className="ring-track" />
+          <circle cx={C} cy={C} r={R - 14} className="ring-hair" />
+          <circle cx={C} cy={C} r={R + 12} className="ring-hair" />
           {segs.map((s) => (
             <path key={s.i} d={arc(C, C, R, s.i / L + gap, (s.i + 1) / L - gap)} className={`rs rs-${s.kind}`} />
           ))}
@@ -334,4 +337,10 @@ function Calendar({ data, ym, setYm, today, prediction, onOpenDay }: { data: App
       {prediction && <p className="hint center small">Die Erwartung ist ein Durchschnitt Ihrer letzten Zyklen und kein Verhütungsschutz.</p>}
     </section>
   )
+}
+
+/** Linienzeichnung (Gebärmutter mit Herz) in der aktuellen Akzentfarbe, als CSS-Maske. */
+export function Lineart({ className }: { className?: string }) {
+  const url = `url(${import.meta.env.BASE_URL}lineart.svg)`
+  return <span className={`lineart ${className ?? ''}`} style={{ WebkitMaskImage: url, maskImage: url }} aria-hidden="true" />
 }
