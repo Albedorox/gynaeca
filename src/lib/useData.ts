@@ -2,7 +2,7 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import { useMemo } from 'react'
 import { db, mergeSettings } from './db'
 import { computeCycles, type Cycle } from './cycles'
-import { emptyDay, type ContraceptionCourse, type DayEntry, type Settings } from './model'
+import { normalizeDay, type ContraceptionCourse, type DayEntry, type Settings } from './model'
 import { todayISO, type ISODate } from './dates'
 import { evaluateNfp, type NfpCycle } from './nfp'
 import { cycleAlerts, type CycleAlert } from './alerts'
@@ -23,7 +23,7 @@ export interface AppData {
 export function useAppData(): AppData {
   const settingsRow = useLiveQuery(() => db.settings.get('app'), [], null)
   // Ältere Einträge um neue Felder ergänzen
-  const dayList = useLiveQuery(async () => (await db.days.orderBy('date').toArray()).map((d) => ({ ...emptyDay(d.date), ...d })), [], null)
+  const dayList = useLiveQuery(async () => (await db.days.orderBy('date').toArray()).map(normalizeDay), [], null)
   const courses = useLiveQuery(() => db.courses.orderBy('start').toArray(), [], null)
 
   const settings = useMemo(() => mergeSettings(settingsRow ?? undefined), [settingsRow])
@@ -34,11 +34,13 @@ export function useAppData(): AppData {
   )
 
   const today = todayISO()
+  // Nur hormonelle Verhütung beeinflusst NFP und Zyklushinweise
+  const contra = useMemo(() => (courses ?? []).filter((c) => !c.kind), [courses])
   const nfp = useMemo(
-    () => (settings.modules.nfp ? evaluateNfp(cycles, days, settings, courses ?? [], today) : []),
-    [cycles, days, settings, courses, today],
+    () => (settings.modules.nfp ? evaluateNfp(cycles, days, settings, contra, today) : []),
+    [cycles, days, settings, contra, today],
   )
-  const alerts = useMemo(() => cycleAlerts(cycles, settings, courses ?? [], today), [cycles, settings, courses, today])
+  const alerts = useMemo(() => cycleAlerts(cycles, settings, contra, today), [cycles, settings, contra, today])
 
   return {
     nfp,
@@ -52,6 +54,12 @@ export function useAppData(): AppData {
   }
 }
 
+/** Hormonelle Verhütung an diesem Tag (höchstens eine). */
 export function courseOn(courses: ContraceptionCourse[], iso: ISODate): ContraceptionCourse | undefined {
-  return courses.find((c) => c.start <= iso && (c.end === null || iso <= c.end))
+  return courses.find((c) => !c.kind && c.start <= iso && (c.end === null || iso <= c.end))
+}
+
+/** Regelmäßige gynäkologische Medikamente an diesem Tag (mehrere möglich). */
+export function gynMedsOn(courses: ContraceptionCourse[], iso: ISODate): ContraceptionCourse[] {
+  return courses.filter((c) => c.kind === 'gyn' && c.start <= iso && (c.end === null || iso <= c.end))
 }

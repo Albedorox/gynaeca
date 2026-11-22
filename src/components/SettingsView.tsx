@@ -108,12 +108,14 @@ export default function SettingsView({ data, onReport, onScales }: { data: AppDa
           <Toggle label="Schmerzen & Medikamente" hint="Schmerzskala 0–10, ab 4 Frage nach Schmerzmitteln" on={s.modules.pain} onChange={(v) => setModule('pain', v)} />
           <Toggle
             label="Endometriose-Fragen"
-            hint="Schmerzarten mit Stärke, Rücken, Alltag, Stress, Bewegung"
+            hint="Schmerzarten, Alltag, Bewegung, Entspannung, Hilfsmittel und Ernährungstagebuch"
             on={s.modules.endo}
             onChange={(v) => saveSettings({ modules: { ...s.modules, endo: v, pain: v ? true : s.modules.pain } })}
           />
           <Toggle label="Begleitsymptome" hint="Kopfschmerz, Verdauung, Stimmung und eigene Tags" on={s.modules.symptoms} onChange={(v) => setModule('symptoms', v)} />
           <Toggle label="Hormonelle Verhütung" hint="Präparat und Einnahmezeitraum, sichtbar in der Tagesansicht" on={s.modules.contraception} onChange={(v) => setModule('contraception', v)} />
+          <Toggle label="Regelmäßige Medikamente" hint="z. B. Agnus castus oder zyklusregulierende Mittel, mit Einnahmezeitraum" on={s.modules.gynMeds} onChange={(v) => setModule('gynMeds', v)} />
+          <Toggle label="Geschlechtsverkehr" hint="Geschützt oder ungeschützt, wichtig für Verhütung und Kinderwunsch" on={s.modules.sex} onChange={(v) => setModule('sex', v)} />
           <Toggle label="Fruchtbarkeit" hint="Natürliche Familienplanung (symptothermale Methode)" on={s.modules.nfp} onChange={(v) => setModule('nfp', v)} />
           {s.modules.nfp && (
             <div className="sub-toggles">
@@ -239,7 +241,7 @@ export default function SettingsView({ data, onReport, onScales }: { data: AppDa
                 if (!f) return
                 try {
                   const r = await importJSON(f)
-                  setMsg(`Wiederhergestellt: ${r.days} Tage, ${r.courses} Verhütungszeiträume.`)
+                  setMsg(`Wiederhergestellt: ${r.days} Tage, ${r.courses} Einnahmezeiträume.`)
                 } catch (err) {
                   setMsg(err instanceof Error ? err.message : 'Import fehlgeschlagen.')
                 }

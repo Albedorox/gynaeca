@@ -317,6 +317,7 @@ function Calendar({ data, ym, setYm, today, prediction, onOpenDay }: { data: App
                       {(e?.pain ?? 0) > 0 && <i className="dot-pain" />}
                       {mc > 0 && <i className="dot-med" />}
                       {(e?.symptoms.length ?? 0) > 0 && <i className="dot-sym" />}
+                      {data.settings.modules.sex && (e?.sex === 'geschuetzt' || e?.sex === 'ungeschuetzt') && <i className="dot-sex" />}
                     </span>
                   </button>
                 )
@@ -333,6 +334,7 @@ function Calendar({ data, ym, setYm, today, prediction, onOpenDay }: { data: App
         <span><i className="lg-dot dot-pain" />Schmerz</span>
         <span><i className="lg-dot dot-med" />Mittel</span>
         <span><i className="lg-dot dot-sym" />Symptom</span>
+        {data.settings.modules.sex && <span><i className="lg-dot dot-sex" />GV</span>}
       </div>
       {prediction && <p className="hint center small">Die Erwartung ist ein Durchschnitt Ihrer letzten Zyklen und kein Verhütungsschutz.</p>}
     </section>

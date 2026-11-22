@@ -16,6 +16,9 @@ export type CervixOpening = 'geschlossen' | 'leicht' | 'offen'
 export type CervixFirmness = 'hart' | 'mittel' | 'weich'
 export type CervixPosition = 'tief' | 'mittel' | 'hoch'
 
+export type MealSlot = 'morgens' | 'mittags' | 'abends' | 'zwischendurch'
+export type SexEntry = 'geschuetzt' | 'ungeschuetzt' | 'kein'
+
 export interface DayEntry {
   date: ISODate
   /** Blutungsstärke 0–5 in 0,5er-Schritten */
@@ -30,10 +33,32 @@ export interface DayEntry {
   painCharacter: PainCharacter[]
   /** Beeinträchtigung im Alltag (Endometriose-Modul) */
   impairments: string[]
-  /** Bewegung, Entspannung, Beckenboden (Endometriose-Modul) */
+  /** Alt: Bewegung/Entspannung als eine Liste. Wird beim Lesen in movement/relax übernommen. */
   selfcare: string[]
   /** Stress 0–10 */
   stress: number | null
+  /** Bewegung in Minuten am Tag, null = nicht erfasst (Endometriose-Modul) */
+  movementMin: number | null
+  /** Art der Bewegung, z. B. "Spazieren" */
+  movement: string[]
+  /** Entspannungs- und Achtsamkeitsübungen */
+  relax: string[]
+  /** Hilfsmittel wie Wärmepflaster oder Wärmflasche */
+  aids: string[]
+  /** Ernährungstagebuch: was gegessen wurde (Kategorien) */
+  food: string[]
+  /** Ergänzungsmittel, z. B. Omega-3 */
+  supplements: string[]
+  /** Mahlzeiten als Freitext */
+  meals: Partial<Record<MealSlot, string>>
+  /** Wasser/Tee in Gläsern à 250 ml */
+  water: number | null
+  /** Ungesunder Tag ("Cheat Day") */
+  cheatDay: boolean
+  /** Wie das Essen vertragen wurde */
+  foodReaction: string[]
+  /** Geschlechtsverkehr: null = nicht erfasst */
+  sex: SexEntry | null
   symptoms: string[]
   note: string
   /** Basaltemperatur in °C, 2 Nachkommastellen */
@@ -58,6 +83,10 @@ export interface ContraceptionCourse {
   start: ISODate
   /** Letzter Einnahmetag (inklusive). null = läuft noch */
   end: ISODate | null
+  /** 'gyn' = regelmäßiges gynäkologisches Medikament (z. B. Agnus castus); fehlt = hormonelle Verhütung */
+  kind?: 'gyn'
+  /** Dosis oder Einnahmehinweis, frei (z. B. "1 Tablette morgens") */
+  dose?: string
 }
 
 export interface MedFavorite {
@@ -85,6 +114,10 @@ export interface Settings {
     nfpMucus: boolean
     nfpCervix: boolean
     lh: boolean
+    /** Regelmäßige gynäkologische Medikamente */
+    gynMeds: boolean
+    /** Geschlechtsverkehr */
+    sex: boolean
   }
   /** Geburtsjahr für altersabhängige Hinweise */
   birthYear: number | null
@@ -98,6 +131,7 @@ export interface Settings {
   minGapDays: number
   medFavorites: MedFavorite[]
   contraceptionFavorites: string[]
+  gynMedFavorites: string[]
   customSymptoms: string[]
 }
 
@@ -114,7 +148,7 @@ export const SYMPTOM_CATALOG: { group: string; items: string[] }[] = [
 export const DEFAULT_SETTINGS: Settings = {
   id: 'app',
   appearance: { mode: 'dunkel', palette: 'rose' },
-  modules: { contraception: false, pain: true, endo: false, symptoms: true, nfp: false, nfpMucus: true, nfpCervix: false, lh: false },
+  modules: { contraception: false, pain: true, endo: false, symptoms: true, nfp: false, nfpMucus: true, nfpCervix: false, lh: false, gynMeds: true, sex: true },
   birthYear: null,
   menarcheAge: null,
   nfpDisclaimerAccepted: false,
@@ -127,6 +161,7 @@ export const DEFAULT_SETTINGS: Settings = {
     { name: 'Paracetamol', doses: [500, 1000] },
   ],
   contraceptionFavorites: ['Pille', 'Minipille', 'Hormonring', 'Pflaster'],
+  gynMedFavorites: ['Agnus castus (Mönchspfeffer)', 'Dienogest', 'Progesteron', 'Eisen'],
   customSymptoms: [],
 }
 
@@ -143,6 +178,17 @@ export function emptyDay(date: ISODate): DayEntry {
     impairments: [],
     selfcare: [],
     stress: null,
+    movementMin: null,
+    movement: [],
+    relax: [],
+    aids: [],
+    food: [],
+    supplements: [],
+    meals: {},
+    water: null,
+    cheatDay: false,
+    foodReaction: [],
+    sex: null,
     symptoms: [],
     note: '',
     temp: null,
@@ -171,6 +217,17 @@ export function isEmptyDay(d: DayEntry): boolean {
     (d.impairments ?? []).length === 0 &&
     (d.selfcare ?? []).length === 0 &&
     (d.stress ?? null) === null &&
+    (d.movementMin ?? null) === null &&
+    (d.movement ?? []).length === 0 &&
+    (d.relax ?? []).length === 0 &&
+    (d.aids ?? []).length === 0 &&
+    (d.food ?? []).length === 0 &&
+    (d.supplements ?? []).length === 0 &&
+    Object.values(d.meals ?? {}).every((v) => !v || !v.trim()) &&
+    (d.water ?? null) === null &&
+    !d.cheatDay &&
+    (d.foodReaction ?? []).length === 0 &&
+    (d.sex ?? null) === null &&
     d.symptoms.length === 0 &&
     d.note.trim() === '' &&
     d.temp === null &&
@@ -185,4 +242,30 @@ export function isEmptyDay(d: DayEntry): boolean {
 
 export function medCount(d: DayEntry | undefined): number {
   return d ? d.meds.reduce((s, m) => s + m.count, 0) : 0
+}
+
+// Frühere Einträge kannten nur "selfcare". Diese Werte werden in die neuen Felder übernommen.
+const LEGACY_SELFCARE: Record<string, (d: DayEntry) => void> = {
+  'Bewegung ≥ 30 min': (d) => {
+    if (d.movementMin === null || d.movementMin < 30) d.movementMin = 30
+  },
+  Ausdauersport: (d) => addOnce(d.movement, 'Ausdauersport'),
+  'Beckenboden-Übungen': (d) => addOnce(d.movement, 'Beckenboden-Übungen'),
+  'Beckenboden-Physiotherapie': (d) => addOnce(d.movement, 'Beckenboden-Physio'),
+  'Yoga / Entspannung': (d) => addOnce(d.movement, 'Yoga'),
+}
+function addOnce(list: string[], v: string) {
+  if (!list.includes(v)) list.push(v)
+}
+
+/** Ergänzt fehlende Felder und übernimmt Altwerte. Gibt immer ein neues Objekt zurück. */
+export function normalizeDay(raw: Partial<DayEntry> & { date: ISODate }): DayEntry {
+  const d: DayEntry = { ...emptyDay(raw.date), ...raw }
+  d.movement = [...(d.movement ?? [])]
+  d.meals = { ...(d.meals ?? {}) }
+  if ((d.selfcare ?? []).length) {
+    for (const s of d.selfcare) (LEGACY_SELFCARE[s] ?? ((x: DayEntry) => addOnce(x.movement, s)))(d)
+    d.selfcare = []
+  }
+  return d
 }

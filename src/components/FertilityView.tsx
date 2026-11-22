@@ -319,7 +319,7 @@ function ExampleCycle() {
     const list: DayEntry[] = T.map((t, i) => ({ ...emptyDay(addDays(start, i)), bleeding: i < 5 ? [3, 3, 2, 1, 0.5][i] : 0, temp: t, mucus: M[i] }))
     list.push({ ...emptyDay(addDays(start, 28)), bleeding: 3 })
     const map = new Map(list.map((d) => [d.date, d]))
-    const res = evaluateNfp(computeCycles(list, { countSpotting: false, minGapDays: 7 }), map, { modules: { contraception: false, pain: false, endo: false, symptoms: false, nfp: true, nfpMucus: true, nfpCervix: false, lh: false } }, [], addDays(start, 28))
+    const res = evaluateNfp(computeCycles(list, { countSpotting: false, minGapDays: 7 }), map, { modules: { contraception: false, pain: false, endo: false, symptoms: false, nfp: true, nfpMucus: true, nfpCervix: false, lh: false, gynMeds: false, sex: false } }, [], addDays(start, 28))
     return { r: res[0], days: map }
   }, [])
   return (

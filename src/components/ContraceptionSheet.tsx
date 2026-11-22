@@ -63,7 +63,7 @@ export default function ContraceptionSheet({ data, date, onClose }: { data: AppD
     const n = name.trim()
     if (!n) return
     // Beginnt später schon ein anderer Zeitraum, endet dieser davor.
-    const next = data.courses.find((c) => c.start > date)
+    const next = data.courses.find((c) => !c.kind && c.start > date)
     await db.courses.add({ name: n, start: date, end: next ? addDays(next.start, -1) : null })
     if (!data.settings.contraceptionFavorites.includes(n)) {
       await saveSettings({ contraceptionFavorites: [...data.settings.contraceptionFavorites, n] })

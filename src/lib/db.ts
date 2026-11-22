@@ -1,6 +1,6 @@
 import Dexie, { type Table } from 'dexie'
 import type { ContraceptionCourse, DayEntry, Settings } from './model'
-import { DEFAULT_SETTINGS, emptyDay, isEmptyDay } from './model'
+import { DEFAULT_SETTINGS, emptyDay, isEmptyDay, normalizeDay } from './model'
 import type { ISODate } from './dates'
 
 // Alle Daten liegen ausschließlich lokal im Browser (IndexedDB) auf diesem Gerät.
@@ -38,9 +38,10 @@ export async function saveSettings(patch: Partial<Settings>): Promise<void> {
 /** Ändert einen Tag. Leere Tage werden entfernt, damit die DB schlank bleibt. */
 export async function updateDay(date: ISODate, patch: Partial<DayEntry> | ((d: DayEntry) => Partial<DayEntry>)): Promise<void> {
   await db.transaction('rw', db.days, async () => {
-    const cur = (await db.days.get(date)) ?? emptyDay(date)
+    const raw = await db.days.get(date)
+    const cur = raw ? normalizeDay(raw) : emptyDay(date)
     const p = typeof patch === 'function' ? patch(cur) : patch
-    const next: DayEntry = { ...emptyDay(date), ...cur, ...p, date, updatedAt: Date.now() }
+    const next: DayEntry = { ...cur, ...p, date, updatedAt: Date.now() }
     if (isEmptyDay(next)) await db.days.delete(date)
     else await db.days.put(next)
   })
