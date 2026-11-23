@@ -22,6 +22,10 @@ export interface SyncMeta {
   deleted: 0 | 1
   /** zuletzt synchronisierter Stand, Basis für das Zusammenführen */
   base?: unknown
+  /** Datensatz-Name auf dem Server (HMAC), wird beim Sync gesetzt */
+  rk?: string
+  /** zählt lokale Änderungen, damit der Sync Änderungen während des Sendens erkennt */
+  tick?: number
 }
 
 /** Gerätebezogener Sync-Zustand (eine Zeile, id 'state') */
@@ -43,7 +47,7 @@ export interface StoredKey {
 
 // Alle Daten liegen lokal im Browser (IndexedDB) auf diesem Gerät.
 // Ein Konto ist optional und synchronisiert nur verschlüsselt.
-class ZyklusDB extends Dexie {
+export class ZyklusDB extends Dexie {
   days!: Table<DayEntry, string>
   courses!: Table<ContraceptionCourse, number>
   settings!: Table<Settings, string>
@@ -51,8 +55,8 @@ class ZyklusDB extends Dexie {
   syncState!: Table<SyncState, string>
   keys!: Table<StoredKey, string>
 
-  constructor() {
-    super('die-frau-zyklusblatt')
+  constructor(name = 'die-frau-zyklusblatt') {
+    super(name)
     this.version(1).stores({
       days: 'date',
       courses: '++id, start, end',
@@ -82,10 +86,17 @@ class ZyklusDB extends Dexie {
         if (await tx.table('settings').get('app')) now.push(meta('settings', 'app'))
         await tx.table('sync').bulkPut(now)
       })
+    // Version 3: Datensatz-Name auf dem Server suchbar (für Löschmarken vom Server)
+    this.version(3).stores({ sync: '[col+key], dirty, rk' })
   }
 }
 
-export const db = new ZyklusDB()
+export let db = new ZyklusDB()
+
+/** Nur für Tests: mehrere Geräte nacheinander simulieren */
+export function setDbForTests(next: ZyklusDB): void {
+  db = next
+}
 
 export function newId(): string {
   return crypto.randomUUID()
@@ -98,7 +109,8 @@ function meta(col: SyncCollection, key: string, deleted = false): SyncMeta {
 /** Markiert einen Datensatz als geändert. Muss in einer Transaktion laufen, die db.sync enthält. */
 async function track(col: SyncCollection, key: string, deleted = false): Promise<void> {
   const cur = await db.sync.get([col, key])
-  await db.sync.put({ ...(cur ?? meta(col, key)), dirty: 1, deleted: deleted ? 1 : 0 })
+  const base = cur ?? meta(col, key)
+  await db.sync.put({ ...base, dirty: 1, deleted: deleted ? 1 : 0, tick: (base.tick ?? 0) + 1 })
 }
 
 // ---------------------------------------------------------------------------
