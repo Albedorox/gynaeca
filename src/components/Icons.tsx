@@ -74,6 +74,7 @@ const P: Record<string, ReactNode> = {
     </>
   ),
   shield: <path d="M12 3l7 3v5.5c0 4.5-3 7.7-7 9.5-4-1.8-7-5-7-9.5V6z" />,
+  cloud: <path d="M7 18.5h10.5a4 4 0 0 0 .6-7.95A5.5 5.5 0 0 0 7.4 9.1 4.7 4.7 0 0 0 7 18.5z" />,
   user: (
     <>
       <circle cx="12" cy="8.5" r="3.8" />

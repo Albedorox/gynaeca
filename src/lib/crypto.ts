@@ -10,7 +10,6 @@
 //
 // Alles außer Argon2id kommt aus der WebCrypto-Schnittstelle des Browsers.
 
-import { argon2id } from 'hash-wasm'
 import { db, type SyncCollection } from './db'
 
 export const KEY_FORMAT = 1
@@ -271,6 +270,8 @@ export function parseRecoveryCode(input: string): Uint8Array | null {
 // ---------------------------------------------------------------------------
 
 async function passphraseKek(passphrase: string, salt: Uint8Array, p: Argon2Params): Promise<CryptoKey> {
+  // Erst bei Bedarf laden: Wer kein Konto nutzt, lädt die Bibliothek nie
+  const { argon2id } = await import('hash-wasm')
   const raw = await argon2id({
     password: passphrase.normalize('NFC'),
     salt,

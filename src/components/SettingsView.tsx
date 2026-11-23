@@ -7,6 +7,8 @@ import { Chip } from './Sheet'
 import { loadDemo } from '../lib/demo'
 import { NFP_DISCLAIMER } from '../lib/knowledge'
 import { Icon } from './Icons'
+import AccountSection from './AccountSection'
+import { useAccount } from '../lib/account'
 
 function Toggle({ label, hint, on, onChange }: { label: string; hint?: string; on: boolean; onChange: (v: boolean) => void }) {
   return (
@@ -76,6 +78,8 @@ export default function SettingsView({ data, onReport, onScales }: { data: AppDa
   const [medName, setMedName] = useState('')
   const [medDoses, setMedDoses] = useState('')
   const fileRef = useRef<HTMLInputElement>(null)
+  const account = useAccount()
+  const synced = account.status === 'ready'
 
   return (
     <div className="page settings">
@@ -83,6 +87,10 @@ export default function SettingsView({ data, onReport, onScales }: { data: AppDa
         <h1>Einstellungen</h1>
       </header>
       <div className="page-body">
+        <Section title="Konto & Synchronisation" icon="cloud">
+          <AccountSection />
+        </Section>
+
         <Section title="Mein Zyklus" icon="drop">
           <Toggle
             label="Schmierblutung mitzählen"
@@ -207,7 +215,11 @@ export default function SettingsView({ data, onReport, onScales }: { data: AppDa
         </Section>
 
         <Section title="Meine Daten" icon="shield">
-          <p className="hint">Alle Daten liegen nur auf diesem Gerät (im Browser-Speicher). Es gibt keinen Server und kein Konto. Lege regelmäßig ein Backup an.</p>
+          <p className="hint">
+            {synced
+              ? 'Ihre Daten liegen auf diesem Gerät und verschlüsselt in Ihrem Konto. Ein eigenes Backup schadet trotzdem nicht.'
+              : 'Ihre Daten liegen nur auf diesem Gerät (im Browser-Speicher). Legen Sie regelmäßig ein Backup an oder richten Sie oben ein Konto ein.'}
+          </p>
           <div className="stack">
             <button className="btn" onClick={() => exportJSON()}>Backup als JSON speichern</button>
             <button className="btn" onClick={() => exportCSV()}>Tabelle als CSV (Excel)</button>
@@ -251,7 +263,7 @@ export default function SettingsView({ data, onReport, onScales }: { data: AppDa
               <button className="btn danger" onClick={() => setConfirmDelete(true)}>Alle Daten löschen …</button>
             ) : (
               <div className="confirm">
-                <span>Wirklich alles unwiderruflich löschen?</span>
+                <span>{synced ? 'Wirklich alles unwiderruflich löschen, auch im Konto und auf allen Ihren Geräten?' : 'Wirklich alles unwiderruflich löschen?'}</span>
                 <button
                   className="btn danger"
                   onClick={async () => {

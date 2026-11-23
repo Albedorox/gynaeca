@@ -975,3 +975,31 @@ h3 { font-size: 12px; letter-spacing: .08em; }
 .btn-reset { flex: none; display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 0 14px; border-radius: 999px; border: 1px solid var(--hair, var(--line-strong)); background: transparent; color: var(--accent); font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; }
 .btn-reset:active { background: var(--surface-2); }
 .btn-reset[hidden] { display: none; }
+
+/* Konto & Synchronisation */
+input[type=email], input[type=password] {
+  border: 1px solid transparent; border-radius: 12px; padding: 10px 12px; background: var(--surface-2); min-height: 44px; min-width: 0; font-size: 16px; color: var(--ink);
+}
+.account .field input { width: 100%; }
+.account .code-input { font-size: 22px; letter-spacing: .3em; text-align: center; font-variant-numeric: tabular-nums; }
+.account .acc-step { font-size: 14px; font-weight: 600; margin: 16px 0 6px; }
+.account .consent { display: flex; gap: 10px; align-items: flex-start; font-size: 13px; line-height: 1.45; margin: 8px 0 12px; }
+.account .consent input { margin-top: 3px; width: 18px; height: 18px; accent-color: var(--accent); flex: none; }
+.account .hint.warn { color: var(--blood); }
+.account .msg.error { margin-top: 10px; color: var(--blood); }
+.account .recovery-code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 18px; letter-spacing: .06em; text-align: center;
+  background: var(--surface-2); border: 1px dashed var(--line-strong); border-radius: 12px; padding: 14px 10px; margin: 10px 0; user-select: all; word-break: break-all;
+}
+.account .choice { border: 1px solid var(--line-strong); border-radius: 12px; padding: 10px 12px; margin: 12px 0; display: flex; flex-direction: column; gap: 8px; }
+.account .choice legend { font-size: 13px; font-weight: 600; padding: 0 4px; }
+.account .choice label { display: flex; gap: 10px; align-items: flex-start; font-size: 14px; }
+.account .choice label small { display: block; color: var(--muted); font-size: 12px; }
+.account .choice input { accent-color: var(--accent); margin-top: 3px; }
+.account .sync-status { display: flex; gap: 12px; align-items: center; padding: 12px 0 4px; }
+.account .sync-status small { display: block; color: var(--muted); font-size: 12px; }
+.account .sync-dot { width: 10px; height: 10px; border-radius: 50%; background: #3fa66b; flex: none; }
+.account .sync-dot.busy { background: var(--accent); animation: syncpulse 1s ease-in-out infinite alternate; }
+.account .sync-dot.err { background: var(--blood); }
+@keyframes syncpulse { from { opacity: .35 } to { opacity: 1 } }
+.account .confirm input { flex: 1 1 100%; }
