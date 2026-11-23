@@ -235,3 +235,37 @@ export async function replaceAll(data: DataSet): Promise<void> {
 export async function clearAll(): Promise<void> {
   await replaceAll({ days: [], courses: [], settings: null })
 }
+
+// ---------------------------------------------------------------------------
+// Konto-Wechsel und Abmelden
+// ---------------------------------------------------------------------------
+
+/**
+ * Entfernt alle Daten von diesem Gerät, ohne Löschmarken für den Server zu setzen
+ * (Abmelden mit „Daten vom Gerät entfernen“ oder „durch Kontodaten ersetzen“).
+ */
+export async function wipeLocal(): Promise<void> {
+  await db.transaction('rw', [db.days, db.courses, db.settings, db.sync, db.syncState, db.keys], async () => {
+    await Promise.all([db.days.clear(), db.courses.clear(), db.settings.clear(), db.sync.clear(), db.syncState.clear(), db.keys.clear()])
+  })
+}
+
+/**
+ * Löst die Daten auf dem Gerät vom Konto: Schlüssel und Sync-Zustand weg, alle Datensätze gelten
+ * wieder als ungesendet. Die Einträge selbst bleiben erhalten.
+ */
+export async function detachFromAccount(): Promise<void> {
+  await db.transaction('rw', [db.sync, db.syncState, db.keys], async () => {
+    const all = await db.sync.toArray()
+    const keep = all.filter((m) => !m.deleted).map((m) => ({ col: m.col, key: m.key, version: 0, dirty: 1 as const, deleted: 0 as const, tick: m.tick }))
+    await db.sync.clear()
+    await db.sync.bulkPut(keep)
+    await db.syncState.clear()
+    await db.keys.clear()
+  })
+}
+
+/** true, wenn auf dem Gerät Einträge liegen (für die Frage „zusammenführen oder ersetzen“) */
+export async function hasLocalData(): Promise<boolean> {
+  return (await db.days.count()) > 0 || (await db.courses.count()) > 0
+}

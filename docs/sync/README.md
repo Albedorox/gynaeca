@@ -23,5 +23,5 @@ https://claude.ai/artifact/NsXBsjYYwWrQz3J3YsbPy9
 2. ✓ Alle Schreibzugriffe nach `src/lib/db.ts`, Dexie Version 2 (`uid` für Verläufe, Tabellen `sync`, `syncState`, `keys`). Jede Änderung setzt im selben Schritt einen Eintrag in `sync` (dirty, Löschmarke).
 3. ✓ `src/lib/crypto.ts` mit Tests: Hauptschlüssel, Verpackung per Argon2id (64 MiB, t=3) und Wiederherstellungscode (24 Zeichen Crockford-Base32, HKDF), AES-256-GCM mit AAD (Nutzer-ID, Sammlung, Datensatz-Name, Schlüsselversion), HMAC-Datensatz-Namen, Schlüssel als nicht exportierbare CryptoKeys in `db.keys`.
 4. ✓ `src/lib/sync.ts` (Abholen, Senden über `push_records`, Konflikte, Löschmarken, Kontoprüfung) und `src/lib/merge.ts` (Drei-Wege-Zusammenführung je Feld). Tests mit nachgebildetem Server und zwei Geräten. Der Server-Zugang ist austauschbar (`supabaseTransport` für den echten Client). Dexie Version 3 indiziert den Server-Namen (`rk`) in `sync`.
-5. Oberfläche „Konto & Synchronisation“.
+5. Oberfläche „Konto & Synchronisation“ ✓ (src/lib/account.ts, src/components/AccountSection.tsx).
 6. Testphase auf zwei Geräten, dann Google und Apple.
