@@ -577,11 +577,13 @@ input:not([type]), input[type=text], textarea, select { background: var(--surfac
 .cycle-card { background: var(--surface); border-radius: var(--radius); padding: 14px 16px; box-shadow: var(--shadow); margin-bottom: 8px; }
 .cc-head { display: flex; justify-content: space-between; align-items: center; }
 .cc-head h2 { margin: 0; font-size: 19px; font-weight: 600; }
-.cc-bleed { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 14px 0 2px; border-top: 1px solid var(--line); margin-top: 12px; }
-.cc-label { display: flex; flex-direction: column; font-size: 17px; }
-.cc-label b { font-size: 13px; font-weight: 600; color: var(--blood); }
-.cc-label b.none { color: var(--muted); font-weight: 500; }
-.cc-crit { margin: 4px 0 8px; }
+.cc-bleed { padding: 14px 0 2px; border-top: 1px solid var(--line); margin-top: 12px; }
+.cc-bleed-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 48px; }
+.cc-label { font-size: 17px; flex: none; }
+.cc-bleed-info { display: flex; flex-direction: column; gap: 2px; margin: 6px 0 8px; min-height: calc(22px + 2.8em); font-size: 13px; }
+.cc-level { font-size: 14px; font-weight: 600; color: var(--blood); line-height: 20px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cc-level.none { color: var(--muted); font-weight: 500; }
+.cc-crit { color: var(--muted); font-size: 13px; line-height: 1.4; }
 .cc-facts { list-style: none; margin: 6px 0 2px; padding: 2px 0 2px 14px; border-left: 4px solid color-mix(in srgb, var(--blood) 45%, transparent); display: flex; flex-direction: column; gap: 6px; font-size: 16px; }
 .cc-facts .fert-fruchtbar { color: var(--fert-yes); }
 .cc-facts .fert-unfruchtbar, .cc-facts .fert-ab-abend { color: var(--fert-no); }
@@ -966,3 +968,10 @@ h3 { font-size: 12px; letter-spacing: .08em; }
 .ds-tip b { display: block; font-size: 14px; font-weight: 600; color: var(--blood); }
 .ds-tip small { display: block; margin-top: 2px; font-size: 12px; line-height: 1.35; color: var(--muted); white-space: normal; }
 .ds-tip::after { content: ''; position: absolute; left: var(--ax, 50%); top: 100%; width: 10px; height: 10px; background: var(--surface-2); border-right: 1px solid var(--hair, var(--line)); border-bottom: 1px solid var(--hair, var(--line)); transform: translate(-50%, -5px) rotate(45deg); }
+
+/* Schmerzmittel: Zusammenfassung mit fester Höhe und gut treffbarer Zurücksetzen-Knopf */
+.med-sum { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 44px; margin-top: 6px; }
+.med-sum-text { color: var(--muted); font-size: 13px; line-height: 1.4; min-width: 0; }
+.btn-reset { flex: none; display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 0 14px; border-radius: 999px; border: 1px solid var(--hair, var(--line-strong)); background: transparent; color: var(--accent); font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; }
+.btn-reset:active { background: var(--surface-2); }
+.btn-reset[hidden] { display: none; }

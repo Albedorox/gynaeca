@@ -115,12 +115,22 @@ export default function DayPage({ data, date, setDate, onClose, openSheet, onDia
                 )
               })}
             </div>
-            {(d?.meds.length ?? 0) > 0 && (
-              <p className="hint">
-                {d!.meds.map((x) => `${x.name}${x.doseMg ? ` ${x.doseMg} mg` : ''} ${x.count}×`).join(' · ')}{' '}
-                <button className="link inline" onClick={() => updateDay(date, { meds: [] })}>zurücksetzen</button>
-              </p>
-            )}
+            {/* Zusammenfassung immer mit fester Höhe, damit beim Zurücksetzen nichts springt */}
+            <div className="med-sum">
+              <span className="med-sum-text">
+                {(d?.meds.length ?? 0) > 0
+                  ? d!.meds.map((x) => `${x.name}${x.doseMg ? ` ${x.doseMg} mg` : ''} ${x.count}×`).join(' · ')
+                  : 'Antippen zählt eine Einnahme.'}
+              </span>
+              <button
+                type="button"
+                className="btn-reset"
+                hidden={(d?.meds.length ?? 0) === 0}
+                onClick={() => updateDay(date, { meds: [] })}
+              >
+                <Icon name="close" size={16} /> Zurücksetzen
+              </button>
+            </div>
           </Section>
         )}
 
@@ -252,14 +262,17 @@ function CycleCard({ data, date, d, today, openSheet }: { data: AppData; date: I
           Schmierblutung
         </button>
       </div>
+      {/* Feste Bereiche: Zeile mit Tropfen bleibt stehen, Stufe und Kriterium haben reservierte Höhe */}
       <div className="cc-bleed">
-        <span className="cc-label">
-          Blutung
-          <b className={bleeding > 0 ? '' : 'none'}>{bleeding > 0 ? `${fmt(bleeding)} · ${lv.label}` : 'keine'}</b>
-        </span>
-        <DropScale date={date} value={bleeding} />
+        <div className="cc-bleed-row">
+          <span className="cc-label">Blutung</span>
+          <DropScale date={date} value={bleeding} />
+        </div>
+        <div className="cc-bleed-info" aria-live="polite">
+          <b className={`cc-level${bleeding > 0 ? '' : ' none'}`}>{bleeding > 0 ? `${fmt(bleeding)} · ${lv.label}` : 'keine Blutung'}</b>
+          <small className="cc-crit">{bleeding > 0 ? lv.criterion : 'Tropfen antippen, nochmal tippen ergibt einen halben Schritt. Halten und ziehen geht auch.'}</small>
+        </div>
       </div>
-      <p className="hint cc-crit">{bleeding > 0 ? lv.criterion : 'Tropfen antippen, nochmal tippen ergibt einen halben Schritt. Halten und ziehen geht auch.'}</p>
       {(zt !== null || pred || st) && (
         <ul className="cc-facts">
           {zt !== null && <li>{inPeriod ? `${diffDays(c!.start, date) + 1}. Periodentag` : `${zt}. Zyklustag`}</li>}

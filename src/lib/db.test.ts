@@ -60,3 +60,29 @@ describe('Schreibfunktionen markieren Änderungen für den Sync', () => {
     expect(await syncRows()).toEqual(['day:2026-11-01:11', 'settings:app:11'])
   })
 })
+
+describe('Schmerzmittel zurücksetzen', () => {
+  const add = (name: string) => (cur: ReturnType<typeof emptyDay>) => {
+    const i = cur.meds.findIndex((x) => x.name === name)
+    if (i >= 0) return { meds: cur.meds.map((x, j) => (j === i ? { ...x, count: x.count + 1 } : x)) }
+    return { meds: [...cur.meds, { name, doseMg: 250, count: 1 }] }
+  }
+
+  it('danach kann wieder eingetragen werden (Tag mit Blutung)', async () => {
+    await updateDay('2026-11-23', { bleeding: 4 })
+    await updateDay('2026-11-23', add('Naproxen'))
+    await updateDay('2026-11-23', { meds: [] })
+    await updateDay('2026-11-23', add('Naproxen'))
+    await updateDay('2026-11-23', add('Naproxen'))
+    expect((await db.days.get('2026-11-23'))?.meds).toEqual([{ name: 'Naproxen', doseMg: 250, count: 2 }])
+  })
+
+  it('danach kann wieder eingetragen werden (Tag wird dabei leer und gelöscht)', async () => {
+    await updateDay('2026-11-24', add('Ibuprofen'))
+    await updateDay('2026-11-24', { meds: [] })
+    expect(await db.days.get('2026-11-24')).toBeUndefined()
+    await updateDay('2026-11-24', add('Ibuprofen'))
+    expect((await db.days.get('2026-11-24'))?.meds).toHaveLength(1)
+    expect(await db.sync.get(['day', '2026-11-24'])).toMatchObject({ dirty: 1, deleted: 0 })
+  })
+})
