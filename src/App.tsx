@@ -22,6 +22,7 @@ import type { CareTab } from './components/CareSections'
 import TabBar, { type Tab } from './components/TabBar'
 import { useBackButton } from './lib/useBackButton'
 import { applyAppearance } from './lib/theme'
+import { cameFromLoginLink } from './lib/account'
 
 export type SubView = 'report' | 'fertility' | 'month' | 'care'
 export type SheetKind = 'pain' | 'symptoms' | 'nfp' | 'contra' | 'day' | 'scales' | 'gyn' | 'breath'
@@ -30,7 +31,7 @@ export default function App() {
   const data = useAppData()
   const t = parseISO(todayISO())
   const [ym, setYm] = useState({ y: t.y, m0: t.m0 })
-  const [tab, setTab] = useState<Tab>('home')
+  const [tab, setTab] = useState<Tab>(cameFromLoginLink ? 'settings' : 'home')
   const [sub, setSub] = useState<SubView | null>(null)
   const [day, setDay] = useState<ISODate | null>(null)
   const [sheet, setSheet] = useState<{ kind: SheetKind; date: ISODate; id?: number } | null>(null)

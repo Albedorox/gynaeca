@@ -23,6 +23,27 @@ import { AccountMismatchError, runSync, supabaseTransport } from './sync'
 
 const AUTH_STORAGE_KEY = 'gynaeca-auth'
 
+/**
+ * Anmeldung über den Link aus der E-Mail: Supabase leitet mit den Tokens im
+ * URL-Fragment zurück. Wird beim Laden des Moduls gelesen, bevor supabase-js
+ * das Fragment entfernt. Der Code in der E-Mail bleibt der Hauptweg (iOS-PWA).
+ */
+export const cameFromLoginLink = typeof location !== 'undefined' && /(^|[#&])(access_token|error_description)=/.test(location.hash)
+
+/** Liest das Fragment einmal und entfernt es aus der Adresse (ohne popstate). */
+const linkParams: URLSearchParams | null = (() => {
+  if (!cameFromLoginLink) return null
+  const p = new URLSearchParams(location.hash.slice(1))
+  history.replaceState(history.state, '', location.pathname + location.search)
+  return p
+})()
+
+function linkError(): string | null {
+  const err = linkParams?.get('error_code') ?? linkParams?.get('error_description')
+  if (!err) return null
+  return /expired/i.test(err) ? 'Der Link ist abgelaufen. Bitte fordern Sie eine neue E-Mail an.' : 'Die Anmeldung über den Link hat nicht geklappt. Bitte fordern Sie eine neue E-Mail an.'
+}
+
 export type AccountStatus =
   | 'loading'
   /** nicht angemeldet */
@@ -110,12 +131,23 @@ export async function initAccount(): Promise<void> {
   started = true
   const st = await db.syncState.get('state')
   set({ lastSyncAt: st?.lastSyncAt ?? null })
-  if (!hasStoredSession()) {
+  const le = linkError()
+  if (le) {
+    set({ status: 'signedOut', error: le })
+    return
+  }
+  if (!hasStoredSession() && !cameFromLoginLink) {
     set({ status: 'signedOut' })
     return
   }
   try {
     const sb = await client()
+    const at = linkParams?.get('access_token')
+    const rt = linkParams?.get('refresh_token')
+    if (at && rt) {
+      const { error } = await sb.auth.setSession({ access_token: at, refresh_token: rt })
+      if (error) throw error
+    }
     const { data } = await sb.auth.getSession()
     if (!data.session) {
       set({ status: 'signedOut' })
@@ -140,7 +172,10 @@ export async function requestCode(email: string): Promise<void> {
   set({ error: null })
   try {
     const sb = await client()
-    const { error } = await sb.auth.signInWithOtp({ email: email.trim(), options: { shouldCreateUser: true } })
+    const { error } = await sb.auth.signInWithOtp({
+      email: email.trim(),
+      options: { shouldCreateUser: true, emailRedirectTo: location.origin + location.pathname },
+    })
     if (error) throw error
     set({ status: 'codeSent', email: email.trim() })
   } catch (e) {

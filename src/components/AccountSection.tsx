@@ -77,7 +77,7 @@ function SignIn({ busy, run }: Props) {
         }}
       >
         <p className="hint first">
-          Wir haben einen Code an <b>{a.email}</b> geschickt. Bitte geben Sie ihn hier ein. Die Mail kann ein, zwei Minuten brauchen und landet manchmal im Spam-Ordner.
+          Wir haben eine E-Mail an <b>{a.email}</b> geschickt. Geben Sie den Code daraus hier ein, oder tippen Sie auf den Link in der Mail. Die Mail kann ein, zwei Minuten brauchen und landet manchmal im Spam-Ordner.
         </p>
         <label className="field">
           Code aus der E-Mail
@@ -119,7 +119,7 @@ function SignIn({ busy, run }: Props) {
         <input type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="name@beispiel.de" required />
       </label>
       <button className="btn primary full" type="submit" disabled={busy || !/^\S+@\S+\.\S+$/.test(email.trim())}>
-        Code per E-Mail senden
+        Anmelde-E-Mail senden
       </button>
     </form>
   )
