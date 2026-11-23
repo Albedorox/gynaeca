@@ -485,13 +485,21 @@ input:not([type]), input[type=text], textarea, select { background: var(--surfac
 .rs-fert { stroke: color-mix(in srgb, var(--fert) 70%, var(--surface-2)); }
 .rs-ovu { stroke: var(--fert); }
 .ring-marker { fill: var(--ink); stroke: var(--bg); stroke-width: 4; }
+/* Die Karten liegen in einem Quadrat genau innerhalb der inneren Haarlinie (r = 101 von 130)
+   und werden darauf kreisrund zugeschnitten, wie ein Uhrenzifferblatt. */
 .ring-slides {
-  position: absolute; inset: 9% 11%; display: flex; overflow-x: auto; scroll-snap-type: x mandatory;
+  position: absolute; inset: 11.2%; display: flex; overflow-x: auto; scroll-snap-type: x mandatory;
   scrollbar-width: none; overscroll-behavior-x: contain;
+  border-radius: 50%; clip-path: circle(50% at 50% 50%); -webkit-clip-path: circle(50% at 50% 50%);
+  container-type: inline-size;
 }
 .ring-slides::-webkit-scrollbar { display: none; }
-.ring-slide { flex: 0 0 100%; scroll-snap-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; text-align: center; padding: 0 8px 22px; }
-.ring-slide .btn-pill { white-space: nowrap; font-size: 15px; padding: 10px 20px; margin-top: 2px; }
+.ring-slide { flex: 0 0 100%; scroll-snap-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; text-align: center; padding: 0 8cqi 16cqi; min-width: 0; }
+/* Der Knopf bleibt sicher innerhalb des Kreises: Breite und Schrift richten sich nach dem Zifferblatt. */
+.ring-slide .btn-pill {
+  white-space: nowrap; max-width: 84cqi; overflow: hidden; text-overflow: ellipsis;
+  font-size: clamp(12px, 5.9cqi, 15px); padding: 0 clamp(14px, 6cqi, 20px); min-height: clamp(38px, 17cqi, 46px); margin-top: 2px;
+}
 .ring-num { font-size: clamp(64px, 22vw, 92px); font-weight: 300; line-height: .95; letter-spacing: -.04em; }
 .ring-num small { font-size: .35em; color: var(--accent); }
 .ring-label { font-size: 21px; font-weight: 500; margin-top: -2px; }
@@ -911,9 +919,9 @@ h3 { font-size: 12px; letter-spacing: .08em; }
 .rs { stroke-width: 8; }
 .ring-hair { fill: none; stroke: var(--hair); stroke-width: 1; }
 .ring-marker { r: 8; fill: var(--bg); stroke: var(--ink); stroke-width: 2; }
-.ring-num { font-family: var(--display); font-weight: 500; font-size: clamp(76px, 25vw, 104px); letter-spacing: -.02em; }
-.ring-label { font-family: var(--display); font-size: 26px; font-weight: 500; }
-.ring-title { font-family: var(--display); font-size: 24px; font-weight: 600; }
+.ring-num { font-family: var(--display); font-weight: 500; font-size: clamp(56px, 32cqi, 90px); letter-spacing: -.02em; }
+.ring-label { font-family: var(--display); font-size: clamp(21px, 10.5cqi, 26px); font-weight: 500; }
+.ring-title { font-family: var(--display); font-size: clamp(20px, 9.5cqi, 24px); font-weight: 600; }
 .ring-art { width: 150px; height: 87px; margin-bottom: 6px; }
 
 /* Flächen: Haarlinie statt Schatten */
