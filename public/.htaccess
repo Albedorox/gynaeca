@@ -14,4 +14,19 @@ AddType application/manifest+json .webmanifest
 
 Header always set X-Content-Type-Options "nosniff"
 Header always set Referrer-Policy "no-referrer"
-Header always set Permissions-Policy "camera=(), microphone=(), geolocation=()"
+Header always set Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()"
+
+# Browser-Schutz für Gesundheitsdaten
+# CSP: nur eigene Skripte; Netzwerk nur zur eigenen Seite und zu Supabase (Konto/Sync).
+# 'wasm-unsafe-eval' braucht hash-wasm (Argon2id für das Sync-Passwort).
+Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' https://jxtgmolapgpzymofenkl.supabase.co wss://jxtgmolapgpzymofenkl.supabase.co; manifest-src 'self'; worker-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests"
+Header always set Strict-Transport-Security "max-age=31536000"
+Header always set X-Frame-Options "DENY"
+Header always set Cross-Origin-Opener-Policy "same-origin"
+Header always set Cross-Origin-Resource-Policy "same-origin"
+
+# Digital Asset Links für die Play-Store-App (TWA), falls später .well-known/assetlinks.json liegt
+<Files "assetlinks.json">
+  Header set Content-Type "application/json"
+  Header set Access-Control-Allow-Origin "*"
+</Files>

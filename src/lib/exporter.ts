@@ -37,8 +37,10 @@ export async function exportJSON(): Promise<void> {
   download(`gynaeca-backup-${todayISO()}.json`, JSON.stringify(data, null, 2), 'application/json')
 }
 
-function csvCell(v: unknown): string {
-  const s = v === null || v === undefined ? '' : String(v)
+export function csvCell(v: unknown): string {
+  let s = v === null || v === undefined ? '' : String(v)
+  // Schutz vor Formel-Injektion: Excel/LibreOffice würden "=…", "+…", "-…", "@…" als Formel ausführen
+  if (typeof v === 'string' && /^[=+\-@\t\r]/.test(s)) s = `'${s}`
   return /[";\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s
 }
 
