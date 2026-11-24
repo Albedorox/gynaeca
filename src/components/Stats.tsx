@@ -220,7 +220,7 @@ function CareCard({ data, onCare }: { data: AppData; onCare: () => void }) {
           <small className="muted">letzte 30 Tage</small>
         </div>
         <div className="kpis three flat">
-          <div className="kpi small"><small>Bewegung/Woche</small><b>{fmt(s.movePerWeek)}</b></div>
+          <div className="kpi small"><small>Bewegung/<wbr />Woche</small><b>{fmt(s.movePerWeek)}</b></div>
           <div className="kpi small"><small>Entspannung</small><b>{s.relaxDays}</b></div>
           <div className="kpi small"><small>Hilfsmittel</small><b>{s.aidDays}</b></div>
         </div>

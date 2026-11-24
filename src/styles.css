@@ -23,6 +23,17 @@
   --on-accent: #ffffff;
   --shadow: 0 6px 24px rgb(60 30 40 / .08);
   --radius: 20px;
+  /* Abstände: ein 4er-Raster, überall dieselben Werte */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --gutter: var(--space-4);   /* Seitenrand links und rechts */
+  --card-pad: var(--space-4); /* Innenabstand jeder Karte, alle vier Seiten */
+  --row-pad: var(--space-3);  /* Abstand über und unter einer Listenzeile */
+  --tile-pad: var(--space-3); /* kleine Kacheln (Kennzahlen) */
   --row-h: calc((100dvh - 118px - env(safe-area-inset-top) - env(safe-area-inset-bottom)) / var(--rows, 31));
   color-scheme: light;
 }
@@ -1011,3 +1022,58 @@ input[type=email], input[type=password] {
 .account .sync-dot.err { background: var(--blood); }
 @keyframes syncpulse { from { opacity: .35 } to { opacity: 1 } }
 .account .confirm input { flex: 1 1 100%; }
+
+/* =====================================================================
+   Einheitliche Abstände – 2026-11
+   Jede Karte hat oben, unten, links und rechts denselben Innenabstand
+   (--card-pad). Listen-Karten bestehen aus Zeilen mit eigenem Abstand
+   (--row-pad); die Karte ergänzt nur den Rest, damit es am Rand ebenfalls
+   --card-pad ergibt. Alles andere am Anfang oder Ende einer Karte bekommt
+   denselben Abstand, egal ob Hinweis, Formular, Knöpfe oder Chips.
+   ===================================================================== */
+.page-body { padding: var(--space-2) var(--gutter) var(--space-6); }
+.tab-head { padding: 18px var(--gutter) var(--space-2); }
+.alert { margin: 0 var(--gutter) var(--space-3); }
+.dp-body { padding: var(--space-4) var(--gutter) 0; }
+.sheet-head { padding: var(--space-2) var(--gutter); }
+.sheet-body { padding: var(--space-2) var(--gutter) var(--space-6); }
+
+/* Inhaltskarten */
+.card, .cycle-card { padding: var(--card-pad); margin-bottom: var(--space-4); }
+.card > :first-child, .cycle-card > :first-child, .card-head > h2 { margin-top: 0; }
+.card > :last-child, .cycle-card > :last-child { margin-bottom: 0; }
+.card-head { margin-bottom: var(--space-2); }
+.card-head > h2 { margin-bottom: 0; }
+/* Textlink am Kartenende: Tippfläche bleibt, sichtbarer Abstand wie überall */
+.card > .link:last-child { margin-bottom: calc(-1 * var(--space-2)); padding-bottom: var(--space-2); }
+
+/* Listen-Karten (Einstellungen, Statistik-Links) */
+.set-card, .list-card { padding: calc(var(--card-pad) - var(--row-pad)) var(--card-pad); margin-bottom: 0; }
+.list-card { margin-bottom: var(--space-4); }
+.toggle, .row-setting, .fav-row, .list-row { padding: var(--row-pad) 0; }
+.set-card > :not(.toggle, .row-setting, .fav-row, .list-row):first-child { margin-top: var(--row-pad); }
+.set-card > :not(.toggle, .row-setting, .fav-row, .list-row):last-child { margin-bottom: var(--row-pad); }
+.set-card .stack { padding: 0; margin: var(--row-pad) 0; }
+.set-card > .msg { margin: var(--space-2) 0 var(--row-pad); }
+.set-card > .chips { margin: var(--row-pad) 0; }
+.sub-toggles { margin: 0 0 var(--space-1) var(--space-3); }
+.sub-toggles > :last-child { margin-bottom: 0; }
+/* Konto-Bereich: innere Ränder nicht doppelt zählen */
+.account > :first-child > :first-child { margin-top: 0; }
+.account > :last-child > :last-child { margin-bottom: 0; }
+.set-group { margin-bottom: var(--space-5); }
+
+/* Eingabezeile unter einer Liste (z. B. Schmerzmittel hinzufügen) */
+.inline-form { gap: var(--space-2); margin-top: var(--row-pad); }
+.inline-form .btn { flex: none; min-width: 46px; }
+
+/* Kennzahlen-Kacheln: gleicher Innenabstand, Spalten laufen nie über */
+.kpis { gap: var(--space-3); margin-bottom: var(--space-3); }
+.kpis.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.kpis:not(.three) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.kpi { padding: var(--tile-pad); min-width: 0; }
+.kpi small { overflow-wrap: break-word; hyphens: auto; -webkit-hyphens: auto; }
+.card .kpis:last-child { margin-bottom: 0; }
+.promo { padding: var(--card-pad); margin-bottom: var(--space-4); }
+/* „Entfernen“ bündig mit dem rechten Kartenrand, wie Schalter und Pfeile */
+.fav-row .btn.ghost { padding-right: 0; }
