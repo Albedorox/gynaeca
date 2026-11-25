@@ -1,10 +1,11 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { Fragment, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react'
 import type { AppData } from '../lib/useData'
 import { courseOn } from '../lib/useData'
 import { addDays, diffDays, monthName, parseISO, todayISO, weekdayShort, type ISODate } from '../lib/dates'
 import { cycleFor, predictNext } from '../lib/cycles'
 import { SYMPTOM_CATALOG, type DayEntry } from '../lib/model'
-import { updateDay } from '../lib/db'
+import { saveSettings, updateDay } from '../lib/db'
+import { resolveLayout, SECTION_BY_ID, showSection } from '../lib/dayLayout'
 import { bleedingLevel, MED_PROMPT_FROM, painCategory } from '../lib/knowledge'
 import { dayStatus, isOvulationDay, STATUS_LABEL } from '../lib/nfp'
 import type { SheetKind } from '../App'
@@ -39,6 +40,7 @@ export default function DayPage({ data, date, setDate, onClose, openSheet, onDia
   const today = todayISO()
   const d = data.days.get(date)
   const m = data.settings.modules
+  const layout = resolveLayout(data.settings.dayLayout, m)
   const { m0, y } = parseISO(date)
   useEffect(() => {
     document.body.style.overflow = 'hidden'
@@ -50,22 +52,11 @@ export default function DayPage({ data, date, setDate, onClose, openSheet, onDia
   const toggleSym = (s: string) =>
     updateDay(date, (cur) => ({ symptoms: cur.symptoms.includes(s) ? cur.symptoms.filter((x) => x !== s) : [...cur.symptoms, s] }))
 
-  return (
-    <div className="daypage" role="dialog" aria-modal="true" aria-label={`Tag ${Number(date.slice(8))}. ${monthName(m0)}`}>
-      <header className="dp-head">
-        <button className="icon-btn" onClick={onClose} aria-label="Schließen"><Icon name="close" /></button>
-        <h1 className="dp-title">
-          {Number(date.slice(8))}. {monthName(m0)}
-          {y !== parseISO(today).y && <span className="muted"> {y}</span>}
-        </h1>
-        <button className="icon-btn" onClick={() => setDate(today)} aria-label="Zu heute" disabled={date === today}><Icon name="today" /></button>
-      </header>
-      <WeekStrip data={data} date={date} setDate={setDate} today={today} />
-
-      <div className="dp-body">
-        <CycleCard data={data} date={date} d={d} today={today} openSheet={openSheet} />
-
-        {m.pain && (
+  /** Inhalt je Abschnitt; Reihenfolge und Sichtbarkeit kommen aus den Einstellungen (dayLayout). */
+  const renderSection = (id: string): ReactNode => {
+    switch (id) {
+      case 'pain':
+        return (
           <Section title="Schmerz" action={m.endo ? 'Details' : 'Mehr'} onAction={() => openSheet('pain', date)}>
             <div className="nrs" role="radiogroup" aria-label="Stärkster Schmerz heute, 0 bis 10">
               {Array.from({ length: 11 }, (_, i) => (
@@ -92,9 +83,9 @@ export default function DayPage({ data, date, setDate, onClose, openSheet, onDia
               </div>
             )}
           </Section>
-        )}
-
-        {m.pain && (
+        )
+      case 'meds':
+        return (
           <Section title="Schmerzmittel" action="Dosis & mehr" onAction={() => openSheet('pain', date)}>
             <div className="icon-grid">
               {data.settings.medFavorites.map((f) => {
@@ -138,34 +129,50 @@ export default function DayPage({ data, date, setDate, onClose, openSheet, onDia
               </button>
             </div>
           </Section>
-        )}
-
-        {m.gynMeds && <GynMedSection data={data} date={date} openSheet={openSheet} />}
-
-        {m.symptoms && (
+        )
+      case 'gyn':
+        return (
+          <GynMedSection data={data} date={date} openSheet={openSheet} />
+        )
+      case 'symptoms':
+        return (
           <Section title="Symptome" action="Alle anzeigen" onAction={() => openSheet('symptoms', date)}>
             <IconGrid items={symptomItems(data.settings.customSymptoms, d?.symptoms ?? [])} on={d?.symptoms ?? []} onToggle={toggleSym} tone="sym" />
+            {data.settings.customSymptoms.length > 0 && (
+              <button type="button" className="link sym-edit" onClick={() => openSheet('symptomsEdit', date)}>
+                Eigene Symptome bearbeiten <Icon name="chevron" size={16} />
+              </button>
+            )}
           </Section>
-        )}
-
-        {m.symptoms && (
+        )
+      case 'mood':
+        return (
           <Section title="Stimmung">
             <IconGrid items={MOODS} on={d?.symptoms ?? []} onToggle={toggleSym} tone="mood" />
           </Section>
-        )}
-
-        {m.endo && (
-          <>
-            <MovementSection data={data} date={date} onDiary={onDiary} />
-            <RelaxSection data={data} date={date} openSheet={openSheet} />
-            <AidsSection data={data} date={date} />
-            <FoodSection data={data} date={date} onDiary={onDiary} />
-          </>
-        )}
-
-        {m.contraception && <ContraSection data={data} date={date} openSheet={openSheet} />}
-
-        {m.nfp && (
+        )
+      case 'movement':
+        return (
+          <MovementSection data={data} date={date} onDiary={onDiary} />
+        )
+      case 'relax':
+        return (
+          <RelaxSection data={data} date={date} openSheet={openSheet} />
+        )
+      case 'aids':
+        return (
+          <AidsSection data={data} date={date} />
+        )
+      case 'food':
+        return (
+          <FoodSection data={data} date={date} onDiary={onDiary} />
+        )
+      case 'contra':
+        return (
+          <ContraSection data={data} date={date} openSheet={openSheet} />
+        )
+      case 'nfp':
+        return (
           <Section title="Fruchtbarkeit" action="Eintragen" onAction={() => openSheet('nfp', date)}>
             <button className="list-row" onClick={() => openSheet('nfp', date)}>
               <span className="lr-icon"><Icon name="thermo" /></span>
@@ -186,13 +193,65 @@ export default function DayPage({ data, date, setDate, onClose, openSheet, onDia
               </button>
             )}
           </Section>
+        )
+      case 'sex':
+        return (
+          <SexSection data={data} date={date} />
+        )
+      case 'note':
+        return (
+          <Section title="Notiz">
+            <NoteField key={date} date={date} initial={d?.note ?? ''} />
+          </Section>
+        )
+      default:
+        return null
+    }
+  }
+
+  return (
+    <div className="daypage" role="dialog" aria-modal="true" aria-label={`Tag ${Number(date.slice(8))}. ${monthName(m0)}`}>
+      <header className="dp-head">
+        <button className="icon-btn" onClick={onClose} aria-label="Schließen"><Icon name="close" /></button>
+        <h1 className="dp-title">
+          {Number(date.slice(8))}. {monthName(m0)}
+          {y !== parseISO(today).y && <span className="muted"> {y}</span>}
+        </h1>
+        <div className="dp-head-btns">
+          <button className="icon-btn" onClick={() => openSheet('layout', date)} aria-label="Abschnitte anpassen"><Icon name="sliders" /></button>
+          <button className="icon-btn" onClick={() => setDate(today)} aria-label="Zu heute" disabled={date === today}><Icon name="today" /></button>
+        </div>
+      </header>
+      <WeekStrip data={data} date={date} setDate={setDate} today={today} />
+
+      <div className="dp-body">
+        <CycleCard data={data} date={date} d={d} today={today} openSheet={openSheet} />
+
+        {layout.visible.map((id) => (
+          <Fragment key={id}>{renderSection(id)}</Fragment>
+        ))}
+
+        {layout.hidden.length > 0 && (
+          <div className="dp-hidden">
+            <h3>Ausgeblendet ({layout.hidden.length})</h3>
+            <div className="chips">
+              {layout.hidden.map((id) => (
+                <button key={id} type="button" className="chip" onClick={() => saveSettings({ dayLayout: showSection(data.settings.dayLayout, m, id) })} aria-label={`${SECTION_BY_ID[id].title} wieder anzeigen`}>
+                  <Icon name="plus" size={14} /> {SECTION_BY_ID[id].title}
+                </button>
+              ))}
+            </div>
+          </div>
         )}
 
-        {m.sex && <SexSection data={data} date={date} />}
-
-        <Section title="Notiz">
-          <NoteField key={date} date={date} initial={d?.note ?? ''} />
-        </Section>
+        <button className="list-row plain" onClick={() => openSheet('layout', date)}>
+          <span className="lr-icon"><Icon name="sliders" /></span>
+          <span className="lr-main">
+            Abschnitte anpassen
+            <small>{layout.hidden.length > 0 ? `${layout.hidden.length} ausgeblendet · ` : ''}Reihenfolge und Sichtbarkeit</small>
+          </span>
+          <Icon name="chevron" className="lr-chev" />
+        </button>
 
         <button className="list-row plain" onClick={() => openSheet('day', date)}>
           <span className="lr-icon"><Icon name="flag" /></span>

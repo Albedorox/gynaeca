@@ -1125,3 +1125,43 @@ input[type=email], input[type=password] {
 .deco-tile .deco-prev .flora { width: 100%; padding: 0; }
 .deco-ring { position: absolute; left: 50%; top: 50%; width: 60%; aspect-ratio: 1; transform: translate(-50%, -50%); border-radius: 50%; background: var(--bg); border: 4px solid var(--surface-2); box-shadow: inset 0 0 0 4px var(--bg), inset 0 0 0 5px var(--hair); }
 .deco-lines { position: absolute; left: 50%; top: 50%; width: 170%; aspect-ratio: 761 / 440; transform: translate(-50%, -46%); opacity: .3; padding: 0; }
+
+/* ---------- Tagesansicht anpassen ---------- */
+.dp-head-btns { display: flex; gap: 2px; }
+.dp-hidden { margin-top: var(--space-4); border: 1px dashed var(--line-strong); border-radius: var(--radius); padding: var(--card-pad); }
+.dp-hidden h3 { margin: 0 0 var(--space-2); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+.dp-hidden .chip { display: inline-flex; align-items: center; gap: 4px; background: transparent; border: 1px solid var(--hair); }
+.dp-hidden .chip svg { color: var(--accent); }
+.sym-edit { margin-top: var(--space-3); }
+
+.lay { --lay-step: 62px; padding-bottom: var(--space-2); }
+.lay-fixed, .lay-row { display: flex; align-items: center; gap: 10px; height: 54px; padding: 0 10px 0 4px; border-radius: 14px; }
+.lay-fixed { border: 1px solid var(--line); color: var(--muted); padding-left: 12px; margin: var(--space-2) 0 8px; }
+.lay-fixed .lay-name { color: var(--ink); }
+.lay-fixed small { font-size: 12px; }
+.lay-list { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; }
+.lay-row { position: relative; background: var(--bg); border: 1px solid var(--line); transition: transform .18s ease, box-shadow .18s; }
+.lay-row.dragging { box-shadow: 0 12px 28px rgb(0 0 0 / .35); border-color: var(--accent); }
+.lay-row.off { border-style: dashed; background: transparent; margin-bottom: 8px; }
+.lay-row.off .lr-icon, .lay-row.off .lay-name, .lay-row.disabled .lr-icon, .lay-row.disabled .lay-name { opacity: .5; }
+.lay-row.disabled { width: 100%; border-style: dashed; background: transparent; text-align: left; color: var(--ink); padding-left: 12px; margin-bottom: 8px; }
+.lay-row.disabled .link { margin-left: auto; display: inline-flex; align-items: center; font-size: 14px; }
+.lay-grip { flex: none; width: 36px; align-self: stretch; display: grid; place-items: center; border: 0; background: none; color: var(--muted); touch-action: none; cursor: grab; padding: 0; }
+.lay-row .lr-icon { width: 34px; height: 34px; border-radius: 11px; }
+.lay-row .lr-icon svg { width: 19px; height: 19px; }
+.lay-name { flex: 1; min-width: 0; display: flex; flex-direction: column; font-weight: 600; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lay-name small { font-weight: 400; font-size: 12px; color: var(--muted); }
+.lay-h { margin: var(--space-5) 2px 8px; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+.lay-empty { font-size: 13px; color: var(--muted); border: 1px dashed var(--line); border-radius: 14px; padding: 12px 14px; margin: 0; }
+.lay-reset { display: block; margin: var(--space-4) auto 0; }
+/* Schalter bewusst zurückhaltend: Linie, zarte Tönung, gedämpfter Knopf */
+.lay-switch { flex: none; position: relative; width: 42px; height: 26px; padding: 0; border-radius: 99px; border: 1px solid var(--line-strong); background: transparent; transition: background .2s, border-color .2s; }
+.lay-switch::after { content: ''; position: absolute; top: 4px; left: 4px; width: 16px; height: 16px; border-radius: 50%; background: var(--muted); transition: transform .2s, background .2s; }
+.lay-switch[aria-checked='true'] { background: color-mix(in srgb, var(--accent) 10%, transparent); border-color: var(--hair); }
+.lay-switch[aria-checked='true']::after { transform: translateX(16px); background: color-mix(in srgb, var(--accent) 50%, var(--muted)); }
+
+/* Eigene Symptome im Symptom-Blatt */
+.custom-sym-head { display: flex; align-items: baseline; justify-content: space-between; }
+.chip-del { display: inline-flex; align-items: center; gap: 6px; background: transparent; border: 1px dashed var(--hair); }
+.chip-del svg { color: var(--accent); }
+.undo-line { font-size: 13px; color: var(--muted); margin: 6px 0 0; }
