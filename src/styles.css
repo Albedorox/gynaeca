@@ -370,7 +370,14 @@ h3.first { margin-top: 10px; }
 .summary dt { color: var(--muted); }
 .summary dd { margin: 0; }
 .chart-wrap { margin-top: 8px; }
-.chart-scroll { overflow-x: auto; }
+.chart-scroll { overflow-x: auto; padding-bottom: var(--space-3); }
+/* Eigene, schmale Scrollleiste mit Abstand unter den Tageszahlen (überdeckt sie nicht) */
+.chart-scroll::-webkit-scrollbar { height: 4px; }
+.chart-scroll::-webkit-scrollbar-track { background: var(--line); border-radius: 2px; margin-inline: 34px 8px; }
+.chart-scroll::-webkit-scrollbar-thumb { background: var(--muted); border-radius: 2px; }
+@supports not selector(::-webkit-scrollbar) {
+  .chart-scroll { scrollbar-width: thin; scrollbar-color: var(--muted) transparent; }
+}
 .chart-scroll svg { display: block; }
 .chart-scroll .grid { stroke: var(--line); stroke-width: 1; }
 .chart-scroll .axis { fill: var(--muted); font-size: 10px; }
