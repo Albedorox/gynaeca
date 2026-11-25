@@ -26,6 +26,12 @@ interface Props {
 const fmt = (v: number) => String(v).replace('.', ',')
 const QUICK_SYMPTOMS = ['Kopfschmerzen', 'Brustspannen', 'Blähungen', 'Übelkeit', 'Rückenschmerz', 'Erschöpfung', 'Unreine Haut', 'Schlafprobleme']
 const MOODS = SYMPTOM_CATALOG.find((g) => g.group === 'Stimmung')!.items
+/** Schnellauswahl: feste Symptome, dann alle eigenen (auch wenn heute nicht gewählt), dann übrige gewählte. */
+function symptomItems(custom: string[], selected: string[]): string[] {
+  const out = [...QUICK_SYMPTOMS]
+  for (const s of [...custom, ...selected]) if (!out.includes(s) && !MOODS.includes(s)) out.push(s)
+  return out
+}
 const PAIN_WORD = { kein: 'kein Schmerz', leicht: 'leicht', mittel: 'mittel', stark: 'stark' }
 
 /** Tagesansicht: Wochenstreifen oben, darunter alle Eingaben des Tages in klaren Abschnitten. */
@@ -138,7 +144,7 @@ export default function DayPage({ data, date, setDate, onClose, openSheet, onDia
 
         {m.symptoms && (
           <Section title="Symptome" action="Alle anzeigen" onAction={() => openSheet('symptoms', date)}>
-            <IconGrid items={[...QUICK_SYMPTOMS, ...(d?.symptoms ?? []).filter((s) => !QUICK_SYMPTOMS.includes(s) && !MOODS.includes(s))]} on={d?.symptoms ?? []} onToggle={toggleSym} tone="sym" />
+            <IconGrid items={symptomItems(data.settings.customSymptoms, d?.symptoms ?? [])} on={d?.symptoms ?? []} onToggle={toggleSym} tone="sym" />
           </Section>
         )}
 
