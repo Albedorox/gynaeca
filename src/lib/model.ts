@@ -139,6 +139,15 @@ export interface Settings {
   contraceptionFavorites: string[]
   gynMedFavorites: string[]
   customSymptoms: string[]
+  /** Tagesansicht: eigene Reihenfolge und ausgeblendete Abschnitte (Kennungen aus dayLayout.ts) */
+  dayLayout: DayLayout
+}
+
+export interface DayLayout {
+  /** Reihenfolge der Abschnitte; fehlende kommen in Standardreihenfolge ans Ende */
+  order: string[]
+  /** In der Tagesansicht ausgeblendet (Daten bleiben erhalten) */
+  hidden: string[]
 }
 
 export const SYMPTOM_CATALOG: { group: string; items: string[] }[] = [
@@ -169,6 +178,7 @@ export const DEFAULT_SETTINGS: Settings = {
   contraceptionFavorites: ['Pille', 'Minipille', 'Hormonring', 'Pflaster'],
   gynMedFavorites: ['Agnus castus (Mönchspfeffer)', 'Dienogest', 'Progesteron', 'Eisen'],
   customSymptoms: [],
+  dayLayout: { order: [], hidden: [] },
 }
 
 export function emptyDay(date: ISODate): DayEntry {

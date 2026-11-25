@@ -69,7 +69,7 @@ function LinkRow({ icon, label, hint, onClick }: { icon: string; label: string; 
   )
 }
 
-export default function SettingsView({ data, onReport, onScales }: { data: AppData; onReport: () => void; onScales: () => void }) {
+export default function SettingsView({ data, onReport, onScales, onDayLayout }: { data: AppData; onReport: () => void; onScales: () => void; onDayLayout: () => void }) {
   const s = data.settings
   const setModule = (k: keyof Settings['modules'], v: boolean) => saveSettings({ modules: { ...s.modules, [k]: v } })
   const [msg, setMsg] = useState<string | null>(null)
@@ -139,6 +139,7 @@ export default function SettingsView({ data, onReport, onScales }: { data: AppDa
               <p className="hint">{NFP_DISCLAIMER}</p>
             </div>
           )}
+          <LinkRow icon="sliders" label="Tagesansicht anpassen" hint="Reihenfolge der Abschnitte, Ausgeblendetes" onClick={onDayLayout} />
         </Section>
 
         <Section title="Persönlich" icon="user">

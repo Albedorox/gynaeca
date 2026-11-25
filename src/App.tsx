@@ -18,6 +18,7 @@ import ScalesSheet from './components/ScalesSheet'
 import CareView from './components/CareView'
 import GynMedSheet from './components/GynMedSheet'
 import BreathSheet from './components/BreathSheet'
+import DayLayoutSheet from './components/DayLayoutSheet'
 import type { CareTab } from './components/CareSections'
 import TabBar, { type Tab } from './components/TabBar'
 import { useBackButton } from './lib/useBackButton'
@@ -25,7 +26,7 @@ import { applyAppearance } from './lib/theme'
 import { cameFromLoginLink } from './lib/account'
 
 export type SubView = 'report' | 'fertility' | 'month' | 'care'
-export type SheetKind = 'pain' | 'symptoms' | 'nfp' | 'contra' | 'day' | 'scales' | 'gyn' | 'breath'
+export type SheetKind = 'pain' | 'symptoms' | 'nfp' | 'contra' | 'day' | 'scales' | 'gyn' | 'breath' | 'symptomsEdit' | 'layout'
 
 export default function App() {
   const data = useAppData()
@@ -88,7 +89,7 @@ export default function App() {
           />
         )}
         {!sub && tab === 'themes' && <Themes data={data} />}
-        {!sub && tab === 'settings' && <SettingsView data={data} onReport={() => setSub('report')} onScales={() => open('scales', todayISO())} />}
+        {!sub && tab === 'settings' && <SettingsView data={data} onReport={() => setSub('report')} onScales={() => open('scales', todayISO())} onDayLayout={() => open('layout', todayISO())} />}
       </main>
 
       {!sub && (
@@ -106,6 +107,19 @@ export default function App() {
 
       {sheet?.kind === 'pain' && <PainSheet data={data} date={sheet.date} onClose={close} onSymptoms={() => open('symptoms', sheet.date)} />}
       {sheet?.kind === 'symptoms' && <SymptomSheet data={data} date={sheet.date} onClose={close} />}
+      {sheet?.kind === 'symptomsEdit' && <SymptomSheet data={data} date={sheet.date} onClose={close} editCustom />}
+      {sheet?.kind === 'layout' && (
+        <DayLayoutSheet
+          data={data}
+          onClose={close}
+          onSettings={() => {
+            setSheet(null)
+            setDay(null)
+            setSub(null)
+            setTab('settings')
+          }}
+        />
+      )}
       {sheet?.kind === 'nfp' && <NfpSheet data={data} date={sheet.date} onClose={close} />}
       {sheet?.kind === 'contra' && <ContraceptionSheet data={data} date={sheet.date} onClose={close} />}
       {sheet?.kind === 'scales' && <ScalesSheet onClose={close} />}
