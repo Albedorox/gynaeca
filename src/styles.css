@@ -1084,3 +1084,44 @@ input[type=email], input[type=password] {
 .promo { padding: var(--card-pad); margin-bottom: var(--space-4); }
 /* „Entfernen“ bündig mit dem rechten Kartenrand, wie Schalter und Pfeile */
 .fav-row .btn.ghost { padding-right: 0; }
+
+/* ---------- Ring-Hintergrund: Aquarell-Blüten ----------
+   Ein Bild je Hell/Dunkel (Linie entfernt, Weiß transparent, für Dunkel aufgehellt).
+   Anordnung per Maske, Farbton per Filter passend zur Palette. Der Bildkreis
+   liegt knapp unter der Ringspur, damit die Blüten hinter dem Ring hervorkommen. */
+:root { --flora-img: url('./assets/flora-dark.webp'); --flora-tint: none; --flora-o: .78; }
+:root[data-theme='light'] { --flora-img: url('./assets/flora-light.webp'); --flora-o: .9; }
+:root[data-palette='beere'] { --flora-tint: hue-rotate(-6deg) saturate(1.15) brightness(.92); }
+:root[data-palette='lavendel'] { --flora-tint: hue-rotate(-62deg) saturate(.85); }
+:root[data-palette='salbei'] { --flora-tint: hue-rotate(150deg) saturate(.45) brightness(1.05); }
+:root[data-palette='ozean'] { --flora-tint: hue-rotate(-135deg) saturate(.7); }
+:root[data-palette='sand'] { --flora-tint: hue-rotate(28deg) saturate(.8); }
+
+.ring-wrap.has-flora {
+  padding: 46px 0 50px;
+  -webkit-mask: linear-gradient(transparent, #000 44px, #000 calc(100% - 44px), transparent);
+  mask: linear-gradient(transparent, #000 44px, #000 calc(100% - 44px), transparent);
+}
+.flora {
+  position: absolute; left: 50%; top: 50%; width: 152%; aspect-ratio: 1; transform: translate(-50%, -50%);
+  background: var(--flora-img) center / contain no-repeat; opacity: var(--flora-o); filter: var(--flora-tint);
+  pointer-events: none;
+}
+.flora-zart { opacity: calc(var(--flora-o) * .46); filter: var(--flora-tint) saturate(.75); }
+.flora-ecken {
+  opacity: .85;
+  -webkit-mask: conic-gradient(#000 0deg, transparent 20deg 70deg, #000 105deg 165deg, transparent 195deg 250deg, #000 285deg 360deg);
+  mask: conic-gradient(#000 0deg, transparent 20deg 70deg, #000 105deg 165deg, transparent 195deg 250deg, #000 285deg 360deg);
+}
+.flora-bogen {
+  opacity: .85;
+  -webkit-mask: conic-gradient(transparent 0deg 85deg, #000 125deg 235deg, transparent 275deg 360deg);
+  mask: conic-gradient(transparent 0deg 85deg, #000 125deg 235deg, transparent 275deg 360deg);
+}
+.ring > .ring-svg, .ring > .ring-slides, .ring > .ring-dots { z-index: 1; }
+
+/* Vorschau-Kacheln unter Themen */
+.deco-prev { position: relative; display: block; width: 100%; aspect-ratio: 1; overflow: hidden; background: var(--bg); padding: 0; }
+.deco-tile .deco-prev .flora { width: 100%; padding: 0; }
+.deco-ring { position: absolute; left: 50%; top: 50%; width: 60%; aspect-ratio: 1; transform: translate(-50%, -50%); border-radius: 50%; background: var(--bg); border: 4px solid var(--surface-2); box-shadow: inset 0 0 0 4px var(--bg), inset 0 0 0 5px var(--hair); }
+.deco-lines { position: absolute; left: 50%; top: 50%; width: 170%; aspect-ratio: 761 / 440; transform: translate(-50%, -46%); opacity: .3; padding: 0; }
