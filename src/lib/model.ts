@@ -100,11 +100,13 @@ export interface MedFavorite {
 
 export type ThemeMode = 'system' | 'dunkel' | 'hell'
 export type ThemePalette = 'rose' | 'beere' | 'lavendel' | 'salbei' | 'ozean' | 'sand'
+/** Hintergrund hinter dem Zyklusring: Aquarell-Blüten in vier Anordnungen, die Linienzeichnung oder nichts */
+export type RingDeco = 'kranz' | 'zart' | 'ecken' | 'bogen' | 'linien' | 'aus'
 
 export interface Settings {
   id: 'app'
-  /** Erscheinungsbild: Hell/Dunkel und Akzentfarbe */
-  appearance: { mode: ThemeMode; palette: ThemePalette }
+  /** Erscheinungsbild: Hell/Dunkel, Akzentfarbe und Hintergrund des Zyklusrings */
+  appearance: { mode: ThemeMode; palette: ThemePalette; ring: RingDeco }
   modules: {
     contraception: boolean
     /** Schmerz & Medikamente */
@@ -151,7 +153,7 @@ export const SYMPTOM_CATALOG: { group: string; items: string[] }[] = [
 
 export const DEFAULT_SETTINGS: Settings = {
   id: 'app',
-  appearance: { mode: 'dunkel', palette: 'rose' },
+  appearance: { mode: 'dunkel', palette: 'rose', ring: 'kranz' },
   modules: { contraception: false, pain: true, endo: false, symptoms: true, nfp: false, nfpMucus: true, nfpCervix: false, lh: false, gynMeds: true, sex: true },
   birthYear: null,
   menarcheAge: null,

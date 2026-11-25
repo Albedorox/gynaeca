@@ -59,7 +59,7 @@ describe('Sync zwischen zwei Geräten', () => {
     const { server, A, B, sync, on } = await setup()
     await on(A, () => updateDay('2026-11-20', { bleeding: 3, symptoms: ['Kopfschmerzen'] }))
     await on(A, () => addCourse({ name: 'Pille', start: '2026-10-01', end: null }))
-    await on(A, () => saveSettings({ minGapDays: 9, appearance: { mode: 'hell', palette: 'ozean' } }))
+    await on(A, () => saveSettings({ minGapDays: 9, appearance: { mode: 'hell', palette: 'ozean', ring: 'zart' } }))
     expect(await sync(A)).toMatchObject({ pushed: 3 })
 
     const raw = JSON.stringify([...server.rows.values()])

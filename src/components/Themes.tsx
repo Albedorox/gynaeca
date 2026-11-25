@@ -1,6 +1,7 @@
 import type { AppData } from '../lib/useData'
 import { saveSettings } from '../lib/db'
-import type { ThemeMode, ThemePalette } from '../lib/model'
+import type { RingDeco, ThemeMode, ThemePalette } from '../lib/model'
+import { Flora, isFlora, Lineart } from './Home'
 
 export const PALETTES: { id: ThemePalette; label: string; a: string; b: string }[] = [
   { id: 'rose', label: 'Rosé', a: '#e2668e', b: '#f2a7b8' },
@@ -16,6 +17,26 @@ const MODES: { id: ThemeMode; label: string }[] = [
   { id: 'hell', label: 'Hell' },
   { id: 'system', label: 'Wie Gerät' },
 ]
+
+const DECOS: { id: RingDeco; label: string }[] = [
+  { id: 'kranz', label: 'Kranz' },
+  { id: 'zart', label: 'Zart' },
+  { id: 'ecken', label: 'Ecken' },
+  { id: 'bogen', label: 'Bogen' },
+  { id: 'linien', label: 'Linien' },
+  { id: 'aus', label: 'Ohne' },
+]
+
+/** Kleine Vorschau: angedeuteter Ring mit dem gewählten Hintergrund. */
+function DecoPreview({ deco }: { deco: RingDeco }) {
+  return (
+    <span className="deco-prev" aria-hidden="true">
+      {isFlora(deco) && <Flora deco={deco} />}
+      {deco === 'linien' && <Lineart className="deco-lines" />}
+      <i className="deco-ring" />
+    </span>
+  )
+}
 
 /** Eigene, abstrakte Kachel: weiche Bögen und Kreise in den Farben der Palette. */
 function Tile({ a, b }: { a: string; b: string }) {
@@ -63,6 +84,17 @@ export default function Themes({ data }: { data: AppData }) {
           ))}
         </div>
         <p className="hint">Die Farbe für Blutung bleibt in jedem Thema gleich, damit Einträge immer eindeutig sind.</p>
+        <h2 className="group-title">Ring-Hintergrund</h2>
+        <div className="theme-grid" role="radiogroup" aria-label="Hintergrund des Zyklusrings">
+          {DECOS.map((d) => (
+            <button key={d.id} role="radio" aria-checked={ap.ring === d.id} className={`theme-tile deco-tile${ap.ring === d.id ? ' on' : ''}`} onClick={() => set({ ring: d.id })}>
+              <DecoPreview deco={d.id} />
+              <span>{d.label}</span>
+              {ap.ring === d.id && <i className="theme-check" aria-hidden="true">✓</i>}
+            </button>
+          ))}
+        </div>
+        <p className="hint">Die Blüten nehmen automatisch den Ton Ihrer Farbe an.</p>
       </div>
     </div>
   )

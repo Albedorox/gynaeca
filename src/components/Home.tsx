@@ -2,7 +2,7 @@ import { useRef, useState, type ReactNode } from 'react'
 import type { AppData } from '../lib/useData'
 import { addDays, diffDays, daysInMonth, monthName, parseISO, shiftMonth, toISO, todayISO, type ISODate } from '../lib/dates'
 import { cycleFor, predictNext, type Prediction } from '../lib/cycles'
-import { medCount } from '../lib/model'
+import { medCount, type RingDeco } from '../lib/model'
 import { bleedingLevel } from '../lib/knowledge'
 import { dayStatus, isOvulationDay, STATUS_LABEL } from '../lib/nfp'
 import { Icon } from './Icons'
@@ -63,6 +63,7 @@ function CycleRing({ data, today, prediction, onOpenDay, onFertility }: { data: 
   const nfpOn = data.settings.modules.nfp
   const L = Math.max(zt ?? 0, prediction?.length ?? 28)
   const todayEntry = data.days.get(today)
+  const deco = data.settings.appearance.ring
 
   // Segmente des Rings: ein Bogen pro Zyklustag
   const segs = cur
@@ -169,9 +170,10 @@ function CycleRing({ data, today, prediction, onOpenDay, onFertility }: { data: 
   }
 
   return (
-    <section className="ring-wrap" aria-label="Zyklus heute">
-      <Lineart className="ring-deco" />
+    <section className={`ring-wrap${isFlora(deco) ? ' has-flora' : ''}`} aria-label="Zyklus heute">
+      {deco === 'linien' && <Lineart className="ring-deco" />}
       <div className="ring">
+        {isFlora(deco) && <Flora deco={deco} />}
         <svg viewBox="0 0 260 260" className="ring-svg" aria-hidden="true">
           <circle cx={C} cy={C} r={R} className="ring-track" />
           <circle cx={C} cy={C} r={R - 14} className="ring-hair" />
@@ -436,6 +438,16 @@ function MonthGrid({ data, ym, today, kindOf, onOpenDay, hidden }: { data: AppDa
       })}
     </div>
   )
+}
+
+/** Ist der Ring-Hintergrund eine der Blüten-Anordnungen? */
+export function isFlora(d: RingDeco): boolean {
+  return d === 'kranz' || d === 'zart' || d === 'ecken' || d === 'bogen'
+}
+
+/** Aquarell-Blütenkranz hinter dem Ring. Bild, Farbton und Anordnung kommen aus dem CSS (Thema, Palette, Variante). */
+export function Flora({ deco }: { deco: RingDeco }) {
+  return <span className={`flora flora-${deco}`} aria-hidden="true" />
 }
 
 /** Linienzeichnung (Gebärmutter mit Herz) in der aktuellen Akzentfarbe, als CSS-Maske. */
