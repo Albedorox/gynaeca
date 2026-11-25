@@ -4,12 +4,12 @@ import { courseOn } from '../lib/useData'
 import { addDays, diffDays, monthName, parseISO, todayISO, weekdayShort, type ISODate } from '../lib/dates'
 import { cycleFor, predictNext } from '../lib/cycles'
 import { SYMPTOM_CATALOG, type DayEntry } from '../lib/model'
-import { updateDay } from '../lib/db'
+import { saveSettings, updateDay } from '../lib/db'
 import { bleedingLevel, MED_PROMPT_FROM, painCategory } from '../lib/knowledge'
 import { dayStatus, isOvulationDay, STATUS_LABEL } from '../lib/nfp'
 import type { SheetKind } from '../App'
 import { Icon } from './Icons'
-import { IconGrid, Section } from './DaySection'
+import { IconGrid, Section, SymptomGrid } from './DaySection'
 import { type CareTab, AidsSection, FoodSection, GynMedSection, MovementSection, RelaxSection, SexSection } from './CareSections'
 import NoteField from './NoteField'
 import { MUCUS } from './NfpSheet'
@@ -144,7 +144,17 @@ export default function DayPage({ data, date, setDate, onClose, openSheet, onDia
 
         {m.symptoms && (
           <Section title="Symptome" action="Alle anzeigen" onAction={() => openSheet('symptoms', date)}>
-            <IconGrid items={symptomItems(data.settings.customSymptoms, d?.symptoms ?? [])} on={d?.symptoms ?? []} onToggle={toggleSym} tone="sym" />
+            <SymptomGrid
+              items={symptomItems(data.settings.customSymptoms, d?.symptoms ?? [])}
+              on={d?.symptoms ?? []}
+              onToggle={toggleSym}
+              custom={data.settings.customSymptoms}
+              onRemove={async (s) => {
+                // Aus der Liste der eigenen Symptome und vom angezeigten Tag nehmen; frühere Tage behalten ihren Eintrag.
+                await saveSettings({ customSymptoms: data.settings.customSymptoms.filter((x) => x !== s) })
+                if (d?.symptoms.includes(s)) await updateDay(date, (cur) => ({ symptoms: cur.symptoms.filter((x) => x !== s) }))
+              }}
+            />
           </Section>
         )}
 

@@ -1125,3 +1125,13 @@ input[type=email], input[type=password] {
 .deco-tile .deco-prev .flora { width: 100%; padding: 0; }
 .deco-ring { position: absolute; left: 50%; top: 50%; width: 60%; aspect-ratio: 1; transform: translate(-50%, -50%); border-radius: 50%; background: var(--bg); border: 4px solid var(--surface-2); box-shadow: inset 0 0 0 4px var(--bg), inset 0 0 0 5px var(--hair); }
 .deco-lines { position: absolute; left: 50%; top: 50%; width: 170%; aspect-ratio: 761 / 440; transform: translate(-50%, -46%); opacity: .3; padding: 0; }
+
+/* Eigene Symptome in der Tagesansicht löschen */
+.icon-grid.editing .ig-item:disabled { opacity: .35; }
+.icon-grid.editing .ig-item.removable .ig-icon { border-style: dashed; border-color: var(--accent); color: var(--accent); animation: ig-wobble .5s ease-in-out infinite alternate; }
+.ig-remove { position: absolute; right: -2px; top: -2px; width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; background: var(--accent); color: var(--on-accent); font-style: normal; }
+.ig-remove svg { width: 12px; height: 12px; stroke-width: 2.4; }
+.ig-edit-row { display: flex; align-items: center; justify-content: flex-end; gap: var(--space-3); margin-top: var(--space-3); }
+.ig-edit-row .hint { flex: 1; margin: 0; font-size: 13px; }
+@keyframes ig-wobble { from { transform: rotate(-2deg); } to { transform: rotate(2deg); } }
+@media (prefers-reduced-motion: reduce) { .icon-grid.editing .ig-item.removable .ig-icon { animation: none; } }
