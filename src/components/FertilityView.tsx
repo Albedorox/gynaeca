@@ -226,7 +226,8 @@ function Chart({ r, days, today }: { r: NfpCycle; days: Map<ISODate, DayEntry>; 
   const x = (i: number) => left + i * W + W / 2
   const rowMucus = top + H + 18
   const rowBand = rowMucus + 14
-  const height = rowBand + 24
+  const rowDayNum = rowBand + 8 + 14
+  const height = rowDayNum + 4
   const results = [r]
   const peakIdx = r.peak ? span.indexOf(r.peak) : -1
   const fhIdx = r.firstHigher ? span.indexOf(r.firstHigher) : -1
@@ -283,7 +284,7 @@ function Chart({ r, days, today }: { r: NfpCycle; days: Map<ISODate, DayEntry>; 
           })}
           {span.map((iso, i) =>
             i % 5 === 0 ? (
-              <text key={iso} x={x(i)} y={height - 2} className="axis" textAnchor="middle">{i + 1}</text>
+              <text key={iso} x={x(i)} y={rowDayNum} className="axis" textAnchor="middle">{i + 1}</text>
             ) : null,
           )}
           {/* Große Trefferflächen pro Tag */}
