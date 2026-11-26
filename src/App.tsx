@@ -19,14 +19,16 @@ import CareView from './components/CareView'
 import GynMedSheet from './components/GynMedSheet'
 import BreathSheet from './components/BreathSheet'
 import DayLayoutSheet from './components/DayLayoutSheet'
+import PrepView from './components/PrepView'
+import { PrepInfoSheet, PrepSheet } from './components/PrepSheets'
 import type { CareTab } from './components/CareSections'
 import TabBar, { type Tab } from './components/TabBar'
 import { useBackButton } from './lib/useBackButton'
 import { applyAppearance } from './lib/theme'
 import { cameFromLoginLink } from './lib/account'
 
-export type SubView = 'report' | 'fertility' | 'month' | 'care'
-export type SheetKind = 'pain' | 'symptoms' | 'nfp' | 'contra' | 'day' | 'scales' | 'gyn' | 'breath' | 'symptomsEdit' | 'layout'
+export type SubView = 'report' | 'fertility' | 'month' | 'care' | 'preps'
+export type SheetKind = 'pain' | 'symptoms' | 'nfp' | 'contra' | 'day' | 'scales' | 'gyn' | 'breath' | 'symptomsEdit' | 'layout' | 'prep' | 'prepInfo'
 
 export default function App() {
   const data = useAppData()
@@ -37,17 +39,19 @@ export default function App() {
   const [day, setDay] = useState<ISODate | null>(null)
   const [sheet, setSheet] = useState<{ kind: SheetKind; date: ISODate; id?: number } | null>(null)
   const [careTab, setCareTab] = useState<CareTab>('food')
+  // Unterseite, zu der „Zurück“ führt (z. B. vom Bericht zurück zum Präparate-Verlauf)
+  const [subBack, setSubBack] = useState<SubView | null>(null)
 
   const { mode, palette } = data.settings.appearance
   useEffect(() => {
     if (data.ready) applyAppearance(mode, palette)
   }, [data.ready, mode, palette])
 
-  const depth = (tab !== 'home' ? 1 : 0) + (sub ? 1 : 0) + (day ? 1 : 0) + (sheet ? 1 : 0)
+  const depth = (tab !== 'home' ? 1 : 0) + (sub ? 1 : 0) + (subBack ? 1 : 0) + (day ? 1 : 0) + (sheet ? 1 : 0)
   useBackButton(depth, () => {
     if (sheet) setSheet(null)
     else if (day) setDay(null)
-    else if (sub) setSub(null)
+    else if (sub) back()
     else if (tab !== 'home') setTab('home')
   })
 
@@ -60,7 +64,16 @@ export default function App() {
     setDay(null)
     setSub('care')
   }
-  const back = () => setSub(null)
+  function back() {
+    setSub(subBack)
+    setSubBack(null)
+  }
+  const openSub = (s: SubView, from: SubView | null = null) => {
+    setSubBack(from)
+    setDay(null)
+    setSub(s)
+    window.scrollTo(0, 0)
+  }
   const openDay = (d: ISODate) => {
     setDay(d)
     const p = parseISO(d)
@@ -72,6 +85,7 @@ export default function App() {
       <main className="screen">
         {sub === 'report' && <Report data={data} onBack={back} />}
         {sub === 'fertility' && <FertilityView data={data} onBack={back} openSheet={open} />}
+        {sub === 'preps' && <PrepView data={data} onBack={back} onReport={() => openSub('report', 'preps')} openSheet={open} />}
         {sub === 'care' && <CareView data={data} tab={careTab} setTab={setCareTab} onBack={back} onPickDay={openDay} />}
         {sub === 'month' && <MonthView data={data} ym={ym} setYm={setYm} openSheet={open} onBack={back} onPickDay={openDay} />}
         {!sub && tab === 'home' && <Home data={data} ym={ym} setYm={setYm} onOpenDay={openDay} onFertility={() => setSub('fertility')} />}
@@ -82,6 +96,7 @@ export default function App() {
             onTable={() => setSub('month')}
             onFertility={() => setSub('fertility')}
             onCare={() => openCare('food')}
+            onPreps={() => openSub('preps')}
             onPickMonth={(y, m0) => {
               setYm({ y, m0 })
               setSub('month')
@@ -103,7 +118,7 @@ export default function App() {
         />
       )}
 
-      {day && <DayPage data={data} date={day} setDate={openDay} onClose={() => setDay(null)} openSheet={open} onDiary={openCare} />}
+      {day && <DayPage data={data} date={day} setDate={openDay} onClose={() => setDay(null)} openSheet={open} onDiary={openCare} onPreps={() => openSub('preps')} />}
 
       {sheet?.kind === 'pain' && <PainSheet data={data} date={sheet.date} onClose={close} onSymptoms={() => open('symptoms', sheet.date)} />}
       {sheet?.kind === 'symptoms' && <SymptomSheet data={data} date={sheet.date} onClose={close} />}
@@ -125,6 +140,22 @@ export default function App() {
       {sheet?.kind === 'scales' && <ScalesSheet onClose={close} />}
       {sheet?.kind === 'gyn' && <GynMedSheet data={data} date={sheet.date} id={sheet.id} onClose={close} />}
       {sheet?.kind === 'breath' && <BreathSheet date={sheet.date} onClose={close} />}
+      {sheet?.kind === 'prep' && (
+        <PrepSheet
+          key={sheet.id ?? 'new'}
+          data={data}
+          id={sheet.id}
+          onClose={close}
+          onSaved={(id) => {
+            // Nach dem Speichern die Übersicht des Eintrags zeigen (Bewertung, Absetzgrund)
+            if (sub !== 'preps') openSub('preps')
+            open('prepInfo', sheet.date, id)
+          }}
+        />
+      )}
+      {sheet?.kind === 'prepInfo' && sheet.id !== undefined && (
+        <PrepInfoSheet key={sheet.id} data={data} id={sheet.id} onClose={close} onEdit={() => open('prep', sheet.date, sheet.id)} />
+      )}
       {sheet?.kind === 'day' && <DaySheet data={data} date={sheet.date} onClose={close} />}
     </div>
   )

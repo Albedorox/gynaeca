@@ -3,6 +3,7 @@ import Sheet, { Chip } from './Sheet'
 import { addCourse, deleteCourse, saveSettings, updateCourse } from '../lib/db'
 import { addDays, formatDE, weekdayShort, type ISODate } from '../lib/dates'
 import type { AppData } from '../lib/useData'
+import { catalogEntry } from '../lib/preparations'
 
 /**
  * Regelmäßig eingenommene gynäkologische Medikamente (z. B. Agnus castus, Dienogest).
@@ -70,7 +71,16 @@ export default function GynMedSheet({ data, date, id, onClose }: { data: AppData
     if (!n) return
     // Gleiches Mittel, das später neu beginnt: dieser Zeitraum endet davor.
     const next = data.courses.find((c) => c.kind === 'gyn' && c.name === n && c.start > date)
-    await addCourse({ kind: 'gyn', name: n, start: date, end: next ? addDays(next.start, -1) : null, dose: dose.trim() || undefined })
+    const cat = catalogEntry(n)
+    await addCourse({
+      kind: 'gyn',
+      name: n,
+      start: date,
+      end: next ? addDays(next.start, -1) : null,
+      dose: dose.trim() || cat?.dose || undefined,
+      substance: cat?.substance,
+      schedule: cat?.schedule,
+    })
     if (!favs.includes(n)) await saveSettings({ gynMedFavorites: [...favs, n] })
     onClose()
   }

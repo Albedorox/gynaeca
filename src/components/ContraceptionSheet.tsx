@@ -3,6 +3,7 @@ import Sheet, { Chip } from './Sheet'
 import { addCourse, deleteCourse, saveSettings, updateCourse } from '../lib/db'
 import { addDays, formatDE, weekdayShort, type ISODate } from '../lib/dates'
 import { courseOn, type AppData } from '../lib/useData'
+import { catalogEntry } from '../lib/preparations'
 
 export default function ContraceptionSheet({ data, date, onClose }: { data: AppData; date: ISODate; onClose: () => void }) {
   const active = courseOn(data.courses, date)
@@ -64,7 +65,10 @@ export default function ContraceptionSheet({ data, date, onClose }: { data: AppD
     if (!n) return
     // Beginnt später schon ein anderer Zeitraum, endet dieser davor.
     const next = data.courses.find((c) => !c.kind && c.start > date)
-    await addCourse({ name: n, start: date, end: next ? addDays(next.start, -1) : null })
+    // Bekannte Präparate: Form, Wirkstoff und Dosierung für den Präparate-Verlauf gleich mitspeichern
+    const cat = catalogEntry(n)
+    const extra = cat && cat.form !== 'dauer' ? { form: cat.form, substance: cat.substance, dose: cat.dose || undefined, schedule: cat.schedule } : {}
+    await addCourse({ name: n, start: date, end: next ? addDays(next.start, -1) : null, ...extra })
     if (!data.settings.contraceptionFavorites.includes(n)) {
       await saveSettings({ contraceptionFavorites: [...data.settings.contraceptionFavorites, n] })
     }

@@ -22,6 +22,7 @@ interface Props {
   onClose: () => void
   openSheet: (k: SheetKind, d: ISODate, id?: number) => void
   onDiary: (t: CareTab) => void
+  onPreps: () => void
 }
 
 const fmt = (v: number) => String(v).replace('.', ',')
@@ -36,7 +37,7 @@ function symptomItems(custom: string[], selected: string[]): string[] {
 const PAIN_WORD = { kein: 'kein Schmerz', leicht: 'leicht', mittel: 'mittel', stark: 'stark' }
 
 /** Tagesansicht: Wochenstreifen oben, darunter alle Eingaben des Tages in klaren Abschnitten. */
-export default function DayPage({ data, date, setDate, onClose, openSheet, onDiary }: Props) {
+export default function DayPage({ data, date, setDate, onClose, openSheet, onDiary, onPreps }: Props) {
   const today = todayISO()
   const d = data.days.get(date)
   const m = data.settings.modules
@@ -169,7 +170,7 @@ export default function DayPage({ data, date, setDate, onClose, openSheet, onDia
         )
       case 'contra':
         return (
-          <ContraSection data={data} date={date} openSheet={openSheet} />
+          <ContraSection data={data} date={date} openSheet={openSheet} onPreps={onPreps} />
         )
       case 'nfp':
         return (
@@ -495,7 +496,7 @@ function DropScale({ date, value }: { date: ISODate; value: number }) {
 
 /* ---------- Verhütung ---------- */
 
-function ContraSection({ data, date, openSheet }: { data: AppData; date: ISODate; openSheet: Props['openSheet'] }) {
+function ContraSection({ data, date, openSheet, onPreps }: { data: AppData; date: ISODate; openSheet: Props['openSheet']; onPreps: () => void }) {
   const c = courseOn(data.courses, date)
   return (
     <Section title="Verhütung" action={c ? 'Bearbeiten' : 'Starten'} onAction={() => openSheet('contra', date)}>
@@ -506,6 +507,9 @@ function ContraSection({ data, date, openSheet }: { data: AppData; date: ISODate
           <small>{c ? `seit ${Number(c.start.slice(8))}. ${monthName(parseISO(c.start).m0)}${c.end ? `, bis ${Number(c.end.slice(8))}. ${monthName(parseISO(c.end).m0)}` : ', läuft'}` : 'Tippen, um ein Präparat ab diesem Tag zu starten'}</small>
         </span>
         <Icon name="chevron" className="lr-chev" />
+      </button>
+      <button type="button" className="link sym-edit" onClick={onPreps}>
+        Alle bisherigen Präparate <Icon name="chevron" size={16} />
       </button>
     </Section>
   )

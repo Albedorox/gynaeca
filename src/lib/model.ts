@@ -91,7 +91,22 @@ export interface ContraceptionCourse {
   kind?: 'gyn'
   /** Dosis oder Einnahmehinweis, frei (z. B. "1 Tablette morgens") */
   dose?: string
+  /** Darreichungsform, z. B. Pille oder Hormonspirale (Präparate-Verlauf) */
+  form?: PrepForm
+  /** Wirkstoff(e), z. B. "Dienogest, Ethinylestradiol" */
+  substance?: string
+  /** Einnahmeschema, z. B. "21+7" oder "durchgehend" */
+  schedule?: string
+  /** Eigene Einschätzung der Verträglichkeit */
+  rating?: PrepRating
+  /** Gründe fürs Absetzen */
+  reasons?: string[]
+  /** Nachgetragen mit Monat und Jahr statt genauer Tage (start = 1. des Monats, end = letzter Tag) */
+  approx?: boolean
 }
+
+export type PrepForm = 'pille' | 'minipille' | 'ring' | 'pflaster' | 'spirale' | 'staebchen' | 'spritze' | 'dauer'
+export type PrepRating = 'gut' | 'mittel' | 'schlecht'
 
 export interface MedFavorite {
   name: string
@@ -156,7 +171,7 @@ export const SYMPTOM_CATALOG: { group: string; items: string[] }[] = [
     items: ['Dysmenorrhoe stark', 'Schmerz beim Stuhlgang', 'Schmerz beim Wasserlassen', 'Schmerz beim GV', 'Rückenschmerz', 'Ausstrahlung ins Bein', 'Blähbauch (Endo-Belly)', 'Erschöpfung'],
   },
   { group: 'Verdauung', items: ['Durchfall', 'Verstopfung', 'Übelkeit', 'Blähungen'] },
-  { group: 'Allgemein', items: ['Kopfschmerzen', 'Migräne', 'Brustspannen', 'Unreine Haut', 'Schlafprobleme', 'Wassereinlagerungen'] },
+  { group: 'Allgemein', items: ['Kopfschmerzen', 'Migräne', 'Brustspannen', 'Unreine Haut', 'Schlafprobleme', 'Wassereinlagerungen', 'Libido vermindert'] },
   { group: 'Stimmung', items: ['Ausgeglichen', 'Energiegeladen', 'Stimmungsschwankungen', 'Gereizt', 'Traurig', 'Ängstlich'] },
 ]
 

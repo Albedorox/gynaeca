@@ -75,6 +75,35 @@ const P: Record<string, ReactNode> = {
   ),
   flag: <path d="M6 21V4M6 4.5h11l-2.5 4 2.5 4H6" />,
   heart: <path d="M12 20s-7.5-4.6-7.5-10A4.3 4.3 0 0 1 12 7.3 4.3 4.3 0 0 1 19.5 10c0 5.4-7.5 10-7.5 10z" />,
+  // Gebrochenes Herz: Libido vermindert
+  heartless: <path d="M12 20s-7.5-4.6-7.5-10A4.3 4.3 0 0 1 12 7.3 4.3 4.3 0 0 1 19.5 10c0 5.4-7.5 10-7.5 10zM12 7.3l-1.5 4 3 2-1.5 4" />,
+  // Präparate-Formen
+  minipill: (
+    <>
+      <rect x="4.5" y="4.5" width="15" height="15" rx="4" />
+      <circle cx="9.3" cy="9.3" r="1.3" />
+      <circle cx="14.7" cy="9.3" r="1.3" />
+      <circle cx="9.3" cy="14.7" r="1.3" />
+      <circle cx="14.7" cy="14.7" r="1.3" />
+    </>
+  ),
+  vring: (
+    <>
+      <circle cx="12" cy="12" r="7.5" />
+      <circle cx="12" cy="12" r="4.8" />
+    </>
+  ),
+  ius: <path d="M5.5 6.5c2.2 1.6 4.4 2.3 6.5 2.3s4.3-.7 6.5-2.3M12 8.8v10.7M10 21h4" />,
+  implant: <rect x="10" y="3" width="4" height="18" rx="2" />,
+  shot: <path d="M14.5 3.5l6 6M17.5 6.5l-9 9-3.5 1 1-3.5 9-9M9.5 10.5l4 4M3.5 20.5l2-2" />,
+  sprout: <path d="M12 21v-9M12 12c-4 0-6.5-2.3-6.5-6 3.6 0 6.5 2.2 6.5 6zM12 15c3.6 0 6-2 6-5.5-3.3 0-6 2-6 5.5z" />,
+  check: <path d="M5 12.5l4.5 4.5L19 7.5" />,
+  search: (
+    <>
+      <circle cx="11" cy="11" r="6.5" />
+      <path d="M16 16l4 4" />
+    </>
+  ),
   doc: (
     <>
       <path d="M6 3.5h9l4 4v13H6z" />
@@ -411,6 +440,7 @@ export const SYMPTOM_ICON: Record<string, string> = {
   Durchfall: 'bowel',
   Verstopfung: 'bowel',
   Wassereinlagerungen: 'drop',
+  'Libido vermindert': 'heartless',
   'Dysmenorrhoe stark': 'bolt',
   'Schmerz beim Stuhlgang': 'bowel',
   'Schmerz beim Wasserlassen': 'drop',

@@ -14,6 +14,7 @@ interface Props {
   onTable: () => void
   onFertility: () => void
   onCare: () => void
+  onPreps: () => void
   onPickMonth: (y: number, m0: number) => void
 }
 
@@ -22,7 +23,7 @@ interface Props {
 const CYCLE_OK = [24, 38] as const
 const BLEED_OK = [1, 8] as const
 
-export default function Stats({ data, onReport, onTable, onFertility, onCare, onPickMonth }: Props) {
+export default function Stats({ data, onReport, onTable, onFertility, onCare, onPreps, onPickMonth }: Props) {
   const [tab, setTab] = useState<'cycles' | 'year'>('cycles')
   return (
     <div className="page stats">
@@ -52,6 +53,11 @@ export default function Stats({ data, onReport, onTable, onFertility, onCare, on
             <Icon name="chevron" className="lr-chev" />
           </button>
           <div className="list-card">
+            <button className="list-row" onClick={onPreps}>
+              <span className="lr-icon"><Icon name="pill" /></span>
+              <span className="lr-main">Präparate-Verlauf<small>Pillen, Spiralen und Dauermedikamente mit Verträglichkeit</small></span>
+              <Icon name="chevron" className="lr-chev" />
+            </button>
             <button className="list-row" onClick={onTable}>
               <span className="lr-icon"><Icon name="table" /></span>
               <span className="lr-main">Zyklusblatt als Tabelle<small>Ein Monat, alle Werte pro Tag, zum Eintragen</small></span>
