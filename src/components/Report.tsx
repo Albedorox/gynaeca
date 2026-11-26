@@ -6,10 +6,12 @@ import { formatDE, parseISO, shiftMonth, toISO, todayISO, weekdayShort } from '.
 import { cycleDay, cycleLabel, cycleStats } from '../lib/cycles'
 import { medCount } from '../lib/model'
 import { careLine, careSummary, comparable, foodLine, movedEnough, painCompare, relaxed, unhealthyDay, usedAids } from '../lib/care'
+import { PrepHistory } from './PrepReport'
 
 /** Druckbares Zyklusblatt für den Arztbesuch. "Als PDF speichern" über den Druckdialog. */
 export default function Report({ data, onBack }: { data: AppData; onBack: () => void }) {
   const [months, setMonths] = useState(3)
+  const [showPreps, setShowPreps] = useState(true)
   const today = todayISO()
   const t = parseISO(today)
   const s = shiftMonth(t.y, t.m0, -(months - 1))
@@ -24,7 +26,6 @@ export default function Report({ data, onBack }: { data: AppData; onBack: () => 
   const avgPain = painDays.length ? (painDays.reduce((a, d) => a + (d.pain ?? 0), 0) / painDays.length).toFixed(1).replace('.', ',') : '–'
   const nfp = data.settings.modules.nfp
   const mod = data.settings.modules
-  const gyn = data.courses.filter((c) => c.kind === 'gyn' && c.start <= today && (c.end === null || c.end >= from))
   const sexDays = days.filter((d) => d.sex === 'geschuetzt' || d.sex === 'ungeschuetzt')
   const care = careSummary(data.dayList, from, today)
   const dec = (n: number | null) => (n === null ? '–' : String(n).replace('.', ','))
@@ -48,9 +49,20 @@ export default function Report({ data, onBack }: { data: AppData; onBack: () => 
         </select>
         <button className="btn primary" onClick={() => window.print()}>Drucken / PDF</button>
       </header>
+      {data.courses.length > 0 && (
+        <label className="toggle report-opt no-print">
+          <span>
+            Präparate-Verlauf zeigen
+            <small>Alle bisherigen hormonellen Präparate und Dauermedikamente, unabhängig vom Zeitraum</small>
+          </span>
+          <input type="checkbox" checked={showPreps} onChange={(e) => setShowPreps(e.target.checked)} />
+          <i />
+        </label>
+      )}
       <div className="report">
         <h1>Gynaeca · Zyklusblatt</h1>
         <p>Zeitraum {formatDE(from)} bis {formatDE(today)} · erstellt am {formatDE(today)}</p>
+        {showPreps && <PrepHistory data={data} today={today} />}
 
         <h2>Zyklen</h2>
         <table>
@@ -81,12 +93,6 @@ export default function Report({ data, onBack }: { data: AppData; onBack: () => 
           </p>
         )}
 
-        {mod.gynMeds && gyn.length > 0 && (
-          <p>
-            Regelmäßige Medikamente:{' '}
-            {gyn.map((c) => `${c.name}${c.dose ? ` (${c.dose})` : ''} ab ${formatDE(c.start)}${c.end ? ` bis ${formatDE(c.end)}` : ', läuft'}`).join('; ')}
-          </p>
-        )}
         {mod.sex && sexDays.length > 0 && (
           <p>
             Geschlechtsverkehr an {sexDays.length} Tagen, davon ungeschützt {sexDays.filter((d) => d.sex === 'ungeschuetzt').length}
